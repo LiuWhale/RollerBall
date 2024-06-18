@@ -1,1 +1,3 @@
 # RollerBall
+
+> Algotithm: PPO (continuous)
