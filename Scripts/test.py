@@ -103,7 +103,6 @@ if __name__ == "__main__":
 
             avg_length += t
 
-            plt.clf()
             # logging
             if i_episode % log_interval == 0:
                 avg_length = int(avg_length / log_interval)
@@ -112,10 +111,6 @@ if __name__ == "__main__":
                 pbar.set_description(f'Episode {i_episode} \t Avg length: {avg_length} \t Avg reward: {running_reward:.6f}')
                 running_reward = 0
                 avg_length = 0
-                plt.plot(reward_buf, label="reward mean")
-                plt.legend()
-                plt.savefig('reward.png')
-        plt.close()
     except KeyboardInterrupt:
         print("\nTraining interrupted, continue to next cell to save to save the model.")
     finally:
