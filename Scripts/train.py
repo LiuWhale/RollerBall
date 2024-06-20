@@ -88,8 +88,8 @@ def get_states(env):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Training arguments')
-    parser.add_argument('--episodes', type=int, default=5000, help='Number of episodes to train the model')
-    parser.add_argument('--max-timesteps', type=int, default=2000, help='Number of steps to run the simulation')
+    parser.add_argument('--episodes', type=int, default=50000, help='Number of episodes to train the model')
+    parser.add_argument('--max-timesteps', type=int, default=20000, help='Number of steps to run the simulation')
     parser.add_argument('--k-epoch', type=int, default=5, help='Number of epochs to update the model')
     parser.add_argument('--gamma', type=float, default=0.90, help='Discount factor for computing expected Q values')
     parser.add_argument('--clip', type=float, default=0.2, help='Clipping factor for computing expected Q values')
@@ -129,7 +129,7 @@ if __name__ == "__main__":
     channel.set_configuration_parameters(time_scale = args.time_scale)
     print("RollerBall environment created.")
 
-    state_dim = 8
+    state_dim = 6
     action_dim = 2
     
     env.reset()
@@ -152,7 +152,11 @@ if __name__ == "__main__":
             for t in range(max_timesteps):
                 time_step += 1
                 # Running policy_old:
-                action = ppo.select_action(state, memory)
+                if time_step < 5000:
+                    action = np.random.uniform(-1, 1, action_dim)
+                else:
+                    noise = np.random.normal(0, 1 * 0.1, size=action_dim).clip(-1, 1)
+                    action = ppo.select_action(state, memory) + noise
                 action = np.array([action])
                 action_tuple = ActionTuple()
                 action_tuple.add_continuous(action)
