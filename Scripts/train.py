@@ -168,7 +168,7 @@ if __name__ == "__main__":
                 memory.rewards.append(reward)
                 memory.is_terminals.append(done)
                 # update if its time
-                if time_step % update_timestep == 0:
+                if time_step > 5000 and time_step % update_timestep == 0:
                     ppo.update(memory)
                     memory.clear_memory()
                     time_step = 0
