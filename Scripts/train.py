@@ -138,7 +138,7 @@ if __name__ == "__main__":
                     break
             # End of Episode
             rewardlog.append(episode_reward)
-            print('episode:', i_episode, 'reward:', episode_reward, 'step:', step, 'finished:', finished, 'wd:', wd, 'distOut:', distOut, 'finished_count:', finished_count)
+            print('episode:', i_episode, 'reward:', episode_reward, 'step:', step, 'finished:', finished, 'wd:', wd, 'distOut:', distOut, 'finished_count:', finished_count, 'traincounter:', traincounter)
             if savecounter > 45:
                 break
     except KeyboardInterrupt:
