@@ -76,38 +76,43 @@ public class USVAgent : Agent
     // Update is called once per frame
     public override void OnActionReceived(ActionBuffers actionBuffers)
     {
-        // show the info on ui panel
-        uiPanelText.text = "Target x: " + Target.localPosition.x.ToString() + " y: " + Target.localPosition.z.ToString() + "\nTarget1 x: " + Target1.localPosition.x.ToString() + " y: " + Target1.localPosition.z.ToString() + "\nUSV x: " + this.transform.localPosition.x.ToString() + " y: " + this.transform.localPosition.z.ToString() + "\nAngularVel: " + rBody.angularVelocity.y.ToString() + "\nHeadingAngle: " + headingAngle.ToString();
+        float distanceToTarget = Vector3.Distance(this.transform.localPosition, Target1.localPosition);
         // take action value from actionBuffers
         input.Throttle = actionBuffers.ContinuousActions[0];
         input.Steering = actionBuffers.ContinuousActions[1];
         
         GetHeadingAngle();
         // Rewards
-        float distanceToTarget = Vector3.Distance(this.transform.localPosition, Target1.localPosition);
         SetReward(-distanceToTarget);
 
         CheckWrongDirection();
         CheckDistanceOut();
-
+        bool wd = false;
+        bool distOut = false;
         // Reached target
         if (distanceToTarget < 3.0f)
         {
             EndEpisode();
         }
-        else if (wrongDirection)
+        else if (wrongDirection || distanceOut)
         {
+            wd = wrongDirection;
+            distOut = distanceOut;
             EndEpisode();
         }
-        else if (distanceOut)
-        {
-            EndEpisode();
-        }
+
+        // show the info on ui panel
+        uiPanelText.text = "Target x: " + Target.localPosition.x.ToString() + " y: " + Target.localPosition.z.ToString() + "\nTarget1 x: " + Target1.localPosition.x.ToString() + " y: " + Target1.localPosition.z.ToString() + "\nUSV x: " + this.transform.localPosition.x.ToString() + " y: " + this.transform.localPosition.z.ToString() + "\nAngularVel: " + rBody.angularVelocity.y.ToString() + "\nHeadingAngle: " + headingAngle.ToString() + "\nDiffAngle: " + DifferenceAngle().ToString() + "\nDistanceOut: " + distanceOut.ToString() + "\nWrongDirection: " + wd.ToString() + "\ndistanceToTarget: " + distOut.ToString();
     }
     private void GetHeadingAngle()
     {
-        headingAngle = rBody.rotation.eulerAngles.y - 270;
-        if (headingAngle < 0) {
+        headingAngle = rBody.rotation.eulerAngles.y;
+        if (headingAngle > 180)
+        {
+            headingAngle -= 360;
+        }
+        else if (headingAngle < -180)
+        {
             headingAngle += 360;
         }
     }
