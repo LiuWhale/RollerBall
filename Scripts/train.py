@@ -117,9 +117,9 @@ if __name__ == "__main__":
                 env.set_actions(behavior_name, action_tuple)
                 # Perform a step in the simulation
                 env.step()
-                finished, wd, distOut = string_channel.on_message_received(msg)
                 if finished == 'True': finished_count += 1
                 next_state, reward, done = get_states(env)
+                finished, wd, distOut = string_channel.on_message_received(msg)
                 replay_buffer.add(state, action, next_state, reward, done)
 
                 state = next_state
