@@ -78,6 +78,7 @@ public class StringLogSideChannel : SideChannel
     {
         using (var msgOut = new OutgoingMessage())
         {
+            // Debug.Log("Msg: " + message);
             msgOut.WriteString(message);
             QueueMessageToSend(msgOut);
         }

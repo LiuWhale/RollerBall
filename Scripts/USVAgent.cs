@@ -80,7 +80,7 @@ public class USVAgent : Agent
     // Update is called once per frame
     public override void OnActionReceived(ActionBuffers actionBuffers)
     {
-        float distanceToTarget = Vector3.Distance(this.transform.localPosition, Target1.localPosition);
+        float distanceToTarget = Point2Line(Target.localPosition, Target1.localPosition, this.transform.localPosition);
         // take action value from actionBuffers
         input.Throttle = actionBuffers.ContinuousActions[0];
         input.Steering = actionBuffers.ContinuousActions[1];
@@ -98,18 +98,24 @@ public class USVAgent : Agent
         if (distanceToTarget < 3.0f)
         {
             finished = true;
+            stringChannel.SendStringToPython("True," + wd.ToString() + "," + distOut.ToString());
             EndEpisode();
         }
-        else if (wrongDirection || distanceOut)
+        else if (wrongDirection)
         {
             wd = wrongDirection;
+            stringChannel.SendStringToPython(finished.ToString() + "," + "True" + "," + distOut.ToString());
+            EndEpisode();
+        }
+        else if (distanceOut)
+        {
             distOut = distanceOut;
+            stringChannel.SendStringToPython(finished.ToString() + "," + wd.ToString() + "," + "True");
             EndEpisode();
         }
 
         // show the info on ui panel
         uiPanelText.text = "Target x: " + Target.localPosition.x.ToString() + " y: " + Target.localPosition.z.ToString() + "\nTarget1 x: " + Target1.localPosition.x.ToString() + " y: " + Target1.localPosition.z.ToString() + "\nUSV x: " + this.transform.localPosition.x.ToString() + " y: " + this.transform.localPosition.z.ToString() + "\nAngularVel: " + rBody.angularVelocity.y.ToString() + "\nHeadingAngle: " + headingAngle.ToString() + "\nDiffAngle: " + DifferenceAngle().ToString() + "\nDistanceOut: " + distanceOut.ToString() + "\nWrongDirection: " + wd.ToString() + "\ndistanceToTarget: " + distOut.ToString();
-        stringChannel.SendStringToPython(finished.ToString() + "," + wd.ToString() + "," + distOut.ToString());
     }
     private void GetHeadingAngle()
     {
