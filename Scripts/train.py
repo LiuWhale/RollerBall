@@ -97,6 +97,7 @@ if __name__ == "__main__":
     parser.add_argument('--no-render', action='store_true', default=False, help='Render the environment')
     parser.add_argument('--seed', type=int, default=0, help='Seed for random number generator')
     parser.add_argument('--test', action='store_true', default=False, help='Test the model')
+    parser.add_argument('--time-scale', type=float, default=20.0, help='Time scale for unity')
     
     solved_reward = 0.94  # stop training if avg_reward > solved_reward
     log_interval = 50  # print avg reward in the interval
@@ -122,10 +123,10 @@ if __name__ == "__main__":
     # -----------------
     # Create the GridWorld Environment from the registry
     channel = EngineConfigurationChannel()
-    env = UnityEnvironment(base_port = 5006, file_name="/home/whale/下载/UnityBuild/RollerBall.x86_64", \
+    env = UnityEnvironment(base_port = 5006, file_name="/home/whale/下载/UnityBuild/USV.x86_64", \
         seed=args.seed, no_graphics=args.no_render, side_channels=[channel])
     # set time scale of the environment to speed the train up
-    channel.set_configuration_parameters(time_scale = 20.0)
+    channel.set_configuration_parameters(time_scale = args.time_scale)
     print("RollerBall environment created.")
 
     state_dim = 8
