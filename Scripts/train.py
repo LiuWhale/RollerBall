@@ -4,11 +4,15 @@ from utils import ReplayBuffer
 from mlagents_envs.environment import ActionTuple
 from mlagents_envs.environment import UnityEnvironment
 from mlagents_envs.side_channel.engine_configuration_channel import EngineConfigurationChannel
+from mlagents_envs.side_channel.side_channel import (
+    IncomingMessage,
+)
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import argparse
 from tqdm import tqdm
+from StringLogChannel import StringLogChannel
 
 def get_states(env):
     decision_steps, terminal_steps = env.get_steps(behavior_name)
@@ -42,8 +46,10 @@ if __name__ == "__main__":
     # -----------------
     # Create the GridWorld Environment from the registry
     channel = EngineConfigurationChannel()
+    string_channel = StringLogChannel()
+    msg = IncomingMessage(bytearray())
     env = UnityEnvironment(base_port = 5006, file_name="/home/whale/下载/UnityBuild/USV.x86_64", \
-        seed=args.seed, no_graphics=args.no_render, side_channels=[channel])
+        seed=args.seed, no_graphics=args.no_render, side_channels=[channel,string_channel])
     # set time scale of the environment to speed the train up
     channel.set_configuration_parameters(time_scale = args.time_scale)
     print("RollerBall environment created.")
@@ -84,15 +90,18 @@ if __name__ == "__main__":
         traincounter = 1
         savecounter = 1
         rewardlog = []
+        finished_count = 0
         
-        pbar = tqdm(range(max_episodes))
-        for i_episode in pbar:
+        for i_episode in range(max_episodes):
             done = False
             saved = False
             episode_reward = 0
             episode_timesteps = 0
             env.reset()
             state, r, done = get_states(env)
+            finished = False
+            wd = False
+            distOut = False
             for step in range(max_timesteps):
                 stepcounter += 1
                 # Running policy_old:
@@ -108,9 +117,11 @@ if __name__ == "__main__":
                 env.set_actions(behavior_name, action_tuple)
                 # Perform a step in the simulation
                 env.step()
+                finished, wd, distOut = string_channel.on_message_received(msg)
+                if finished == 'True': finished_count += 1
                 next_state, reward, done = get_states(env)
                 replay_buffer.add(state, action, next_state, reward, done)
-        
+
                 state = next_state
                 episode_reward += reward
                 
@@ -127,7 +138,7 @@ if __name__ == "__main__":
                     break
             # End of Episode
             rewardlog.append(episode_reward)
-            print('episode:', i_episode, 'reward:', episode_reward, 'step:', step)
+            print('episode:', i_episode, 'reward:', episode_reward, 'step:', step, 'finished:', finished, 'wd:', wd, 'distOut:', distOut, 'finished_count:', finished_count)
             if savecounter > 45:
                 break
     except KeyboardInterrupt:

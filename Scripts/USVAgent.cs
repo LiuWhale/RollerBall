@@ -20,12 +20,14 @@ public class USVAgent : Agent
     public Transform targetCamera;
     public Transform targetCamera1;
     public TextMeshProUGUI uiPanelText;
+    private StringLogSideChannel stringChannel;
 
     // Start is called before the first frame update
     void Start()
     {
         rBody = GetComponent<Rigidbody>();
         shipController = this.GetComponent<AdvancedShipController>();
+        stringChannel = this.GetComponent<RegisterStringLogSideChannel>().stringChannel;
         input = shipController.input;
     }
     // Update is called once per episode
@@ -91,9 +93,11 @@ public class USVAgent : Agent
         CheckDistanceOut();
         bool wd = false;
         bool distOut = false;
+        bool finished = false;
         // Reached target
         if (distanceToTarget < 3.0f)
         {
+            finished = true;
             EndEpisode();
         }
         else if (wrongDirection || distanceOut)
@@ -105,6 +109,7 @@ public class USVAgent : Agent
 
         // show the info on ui panel
         uiPanelText.text = "Target x: " + Target.localPosition.x.ToString() + " y: " + Target.localPosition.z.ToString() + "\nTarget1 x: " + Target1.localPosition.x.ToString() + " y: " + Target1.localPosition.z.ToString() + "\nUSV x: " + this.transform.localPosition.x.ToString() + " y: " + this.transform.localPosition.z.ToString() + "\nAngularVel: " + rBody.angularVelocity.y.ToString() + "\nHeadingAngle: " + headingAngle.ToString() + "\nDiffAngle: " + DifferenceAngle().ToString() + "\nDistanceOut: " + distanceOut.ToString() + "\nWrongDirection: " + wd.ToString() + "\ndistanceToTarget: " + distOut.ToString();
+        stringChannel.SendStringToPython(finished.ToString() + "," + wd.ToString() + "," + distOut.ToString());
     }
     private void GetHeadingAngle()
     {
@@ -128,7 +133,6 @@ public class USVAgent : Agent
         Vector3 p1f = Vector3.Project(p1_target, p1_2);
         //加上p1坐标 然后计算距离
         float distance = Vector3.Distance(usvPos, p1f + p1);
-        // Debug.Log("向量投影法：" + distance);
         return distance;
     }
     public float TwoPointAngle(Vector3 p1, Vector3 p2)
