@@ -37,14 +37,16 @@ public class USVAgent : Agent
         this.transform.localPosition = new Vector3( 0, 0.5f, 0);
         this.rBody.rotation = Quaternion.identity;
         // Move the target to a new spot
-        Target.localPosition = new Vector3(Random.value * 20 + 100,
+        var distance = Random.value * 20;
+        var theta = Random.value * 2 * Mathf.PI;
+        Target.localPosition = new Vector3(distance * Mathf.Cos(theta),
                                            0.5f,
-                                           Random.value * 20 + 120);
-        Target1.localPosition = new Vector3(
-                                            Random.value * 50 + 250,
-                                            0.5f,
-                                            Random.value * 50 + 200
-                                            );
+                                           distance * Mathf.Sin(theta));
+        distance = Random.value * 10 + 100;
+        theta = Random.value * 0.9f * Mathf.PI - 0.9f * Random.value / 2;
+        Target1.localPosition = new Vector3(distance * Mathf.Cos(theta),
+                                           0.5f,
+                                           distance * Mathf.Sin(theta));
         // Move the camera to the target
         targetCamera.localPosition = new Vector3(Target.localPosition.x, 5, Target.localPosition.z);
         targetCamera1.localPosition = new Vector3(Target1.localPosition.x, 5, Target1.localPosition.z);

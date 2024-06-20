@@ -97,8 +97,7 @@ if __name__ == "__main__":
                 stepcounter += 1
                 # Running policy_old:
                 if stepcounter < 5000:
-                    # action = np.random.uniform(-1, 1, action_dim)
-                    action = np.array([1, 0.5])
+                    action = np.random.uniform(-1, 1, action_dim)
                 else:
                     noise = np.random.normal(0, max_action * args['expl_noise'], \
                         size=action_dim).clip(-max_action, max_action)
