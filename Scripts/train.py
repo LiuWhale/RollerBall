@@ -107,8 +107,8 @@ if __name__ == "__main__":
                 stepcounter += 1
                 # Running policy_old:
                 if stepcounter < 5e3:
-                    engine = 1 + np.random.normal(-max_action * args['expl_noise'], \
-                        0, size=1)[0]
+                    engine = np.random.normal(-max_action * args['expl_noise'], \
+                        0, size=1)[0] + 1
                     rudder = float(np.random.uniform(-1, 1, 1))
                     action = [engine, rudder]
                 else:
