@@ -102,6 +102,9 @@ if __name__ == "__main__":
             finished = "False"
             wd = "False"
             distOut = "False"
+            traj_x = []
+            traj_y = []
+            plt.clf()
             for step in range(max_timesteps):
                 stepcounter += 1
                 # Running policy_old:
@@ -119,10 +122,12 @@ if __name__ == "__main__":
                 env.step()
                 next_state, reward, done = get_states(env)
                 string_channel.on_message_received(msg)
+                info = string_channel.str.split(',')
+                # traj_x.append(float(info[3]))
+                # traj_y.append(float(info[4]))
                 # Store data in replay buffer before done
                 replay_buffer.add(state, action, next_state, reward, done)
                 if done:
-                    info = string_channel.str.split(',')
                     finished = info[0]
                     wd = info[1]
                     distOut = info[2]
@@ -142,7 +147,11 @@ if __name__ == "__main__":
             if finished == 'True': finished_count += 1
             # End of Episode
             rewardlog.append(episode_reward)
-            print('episode:', i_episode, 'reward:', episode_reward, 'step:', step, 'finished:', finished, 'wd:', wd, 'distOut:', distOut, 'finished_count:', finished_count, 'stepcounter:',stepcounter, 'traincounter:', traincounter)
+            plt.plot(rewardlog, label="reward")
+            plt.legend("reward")
+            plt.savefig("reward.png")
+            plt.close()
+            # print('episode:', i_episode, 'reward:', episode_reward, 'step:', step, 'finished:', finished, 'wd:', wd, 'distOut:', distOut, 'finished_count:', finished_count, 'stepcounter:',stepcounter, 'traincounter:', traincounter)
             if savecounter > 45:
                 break
     except KeyboardInterrupt:
