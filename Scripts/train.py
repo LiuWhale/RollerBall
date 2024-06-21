@@ -32,8 +32,8 @@ if __name__ == "__main__":
     parser.add_argument('--test', action='store_true', default=False, help='Test the model')
     parser.add_argument('--time-scale', type=float, default=20.0, help='Time scale for unity')
     args = parser.parse_args()
-    max_episodes = 5000
-    max_timesteps = 50000
+    max_episodes = 50000
+    max_timesteps = 100000
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # Create a Unity Environment
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     string_channel = StringLogChannel()
     msg = IncomingMessage(bytearray())
     env = UnityEnvironment(file_name="/home/whale/下载/UnityBuild/USV.x86_64", \
-        seed=args.seed, no_graphics=args.no_render, side_channels=[channel,string_channel])
+        seed=args.seed, no_graphics=args.no_render, side_channels=[channel,string_channel], num_areas=10)
     # set time scale of the environment to speed the train up
     channel.set_configuration_parameters(time_scale = args.time_scale)
     print("USV environment created.")
@@ -160,7 +160,7 @@ if __name__ == "__main__":
             plt.legend("trajectory")
             plt.savefig("trajectory.png")
             plt.close()
-            print('episode:', i_episode, 'reward:', episode_reward, 'step:', step, 'finished:', finished, 'wd:', wd, 'distOut:', distOut, 'finished_count:', finished_count, 'stepcounter:',stepcounter, 'traincounter:', traincounter)
+            print('episode:', i_episode, 'reward:', episode_reward, 'step:', step, 'finished:', finished, 'wd:', wd, 'distOut:', distOut, 'finished_count:', finished_count, 'stepcounter:',stepcounter, 'traincounter:', traincounter, "buffer_size:", replay_buffer.ptr)
             if savecounter > 45:
                 break
     except KeyboardInterrupt:
