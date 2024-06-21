@@ -33,7 +33,7 @@ if __name__ == "__main__":
     parser.add_argument('--time-scale', type=float, default=20.0, help='Time scale for unity')
     args = parser.parse_args()
     max_episodes = 5000
-    max_timesteps = 5000
+    max_timesteps = 50000
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # Create a Unity Environment
@@ -107,7 +107,8 @@ if __name__ == "__main__":
                 stepcounter += 1
                 # Running policy_old:
                 if stepcounter < 5e3:
-                    engine = float(np.random.uniform(0, 1, 1))
+                    engine = 1 + np.random.normal(-max_action * args['expl_noise'], \
+                        0, size=1)[0]
                     rudder = float(np.random.uniform(-1, 1, 1))
                     action = [engine, rudder]
                 else:
