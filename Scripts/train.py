@@ -134,7 +134,7 @@ if __name__ == "__main__":
                     policy.train(replay_buffer, args['batch_size'])
                     traincounter += 1
                 # save TD3model
-                if traincounter % 1000 == 0 and not saved:
+                if traincounter % 10000 == 0 and not saved:
                     policy.save('model_'+str(savecounter))
                     savecounter += 1
                     saved = True
