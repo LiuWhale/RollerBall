@@ -109,15 +109,14 @@ public class USVAgent : Agent
         bool wd = false;
         bool distOut = false;
         bool finished = false;
-        // // Reached target
-        // if (distanceToTarget < 3.0f)
-        // {
-        //     finished = true;
-        //     stringChannel.SendStringToPython("True," + wd.ToString() + "," + distOut.ToString());
-        //     EndEpisode();
-        // }
-        // else 
-        if (wrongDirection)
+        // Reached target
+        if (distanceToTarget < 3.0f)
+        {
+            finished = true;
+            stringChannel.SendStringToPython("True," + wd.ToString() + "," + distOut.ToString() + "," + this.transform.localPosition.x.ToString() + "," + this.transform.localPosition.z.ToString());
+            EndEpisode();
+        }
+        else if (wrongDirection)
         {
             wd = wrongDirection;
             stringChannel.SendStringToPython(finished.ToString() + "," + "True" + "," + distOut.ToString() + "," + this.transform.localPosition.x.ToString() + "," + this.transform.localPosition.z.ToString());

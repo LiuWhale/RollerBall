@@ -108,7 +108,7 @@ if __name__ == "__main__":
             for step in range(max_timesteps):
                 stepcounter += 1
                 # Running policy_old:
-                if stepcounter < 10000:
+                if stepcounter < 20000:
                     action = np.random.uniform(-1, 1, action_dim)
                 else:
                     noise = np.random.normal(0, max_action * args['expl_noise'], \
@@ -126,13 +126,14 @@ if __name__ == "__main__":
                 if len(info) > 3:
                     traj_x.append(float(info[3]))
                     traj_y.append(float(info[4]))
-                # Store data in replay buffer before done
-                replay_buffer.add(state, action, next_state, reward, done)
                 if done:
                     finished = info[0]
                     wd = info[1]
                     distOut = info[2]
                     break
+                # Store data in replay buffer before done
+                replay_buffer.add(state, action, next_state, reward, done)
+
                 state = next_state
                 episode_reward += reward
                 
