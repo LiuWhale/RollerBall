@@ -99,13 +99,13 @@ if __name__ == "__main__":
             episode_timesteps = 0
             env.reset()
             state, r, done = get_states(env)
-            finished = False
-            wd = False
-            distOut = False
+            finished = "False"
+            wd = "False"
+            distOut = "False"
             for step in range(max_timesteps):
                 stepcounter += 1
                 # Running policy_old:
-                if stepcounter < 5000:
+                if stepcounter < 10000:
                     action = np.random.uniform(-1, 1, action_dim)
                 else:
                     noise = np.random.normal(0, max_action * args['expl_noise'], \
@@ -120,9 +120,11 @@ if __name__ == "__main__":
                 if finished == 'True': finished_count += 1
                 next_state, reward, done = get_states(env)
                 string_channel.on_message_received(msg)
-                if string_channel.str != '':
-                    print("string_channel: ", string_channel.str)
                 if done:
+                    info = string_channel.str.split(',')
+                    finished = info[0]
+                    wd = info[1]
+                    distOut = info[2]
                     break
                 replay_buffer.add(state, action, next_state, reward, done)
 
@@ -133,7 +135,7 @@ if __name__ == "__main__":
                     policy.train(replay_buffer, args['batch_size'])
                     traincounter += 1
                 # save TD3model
-                if traincounter % 2000 == 0 and not saved:
+                if traincounter % 5000 == 0 and not saved:
                     policy.save('model_'+str(savecounter))
                     savecounter += 1
                     saved = True

@@ -12,7 +12,7 @@ class StringLogChannel(SideChannel):
 
     def __init__(self) -> None:
         super().__init__(uuid.UUID("eb7a9da8-d880-b7ff-7944-c300c6a17e79"))
-        self.str = ''
+        self.str = "False,False,False"
 
     def on_message_received(self, msg: IncomingMessage) -> None:
         """
@@ -20,9 +20,10 @@ class StringLogChannel(SideChannel):
         receive messages from Unity
         """
         # We simply read a string from the message and print it.
-        self.str = msg.read_string()
-        if self.str != '':
-            print(self.str)
+        tmp = msg.read_string()
+        if tmp == 'True,False,False' or tmp == 'False,True,False' or tmp == 'False,False,True':
+            self.str = tmp
+            # print("Class inner:", self.str)
 
     def send_string(self, data: str) -> None:
         # Add the string to an OutgoingMessage
