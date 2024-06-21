@@ -106,8 +106,8 @@ if __name__ == "__main__":
             for step in range(max_timesteps):
                 stepcounter += 1
                 # Running policy_old:
-                if stepcounter < 5000:
-                    engine = float(1)
+                if stepcounter < 5e3:
+                    engine = float(np.random.uniform(0, 1, 1))
                     rudder = float(np.random.uniform(-1, 1, 1))
                     action = [engine, rudder]
                 else:
