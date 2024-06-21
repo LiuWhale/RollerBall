@@ -95,15 +95,13 @@ public class USVAgent : Agent
         usvCamera.localPosition = new Vector3(this.transform.localPosition.x, 35, this.transform.localPosition.z);
         float distanceToTarget = Vector3.Distance(this.transform.localPosition, Target1.localPosition);
         float distance2Line = Point2Line(Target.localPosition, Target1.localPosition, this.transform.localPosition);
-        distance2Line = distance2Line * JudgeLineSide();
         // take action value from actionBuffers
         input.Throttle = actionBuffers.ContinuousActions[0];
         input.Steering = actionBuffers.ContinuousActions[1];
         
         GetHeadingAngle();
         // Rewards
-        SetReward(-distanceToTarget);
-
+        SetReward(-distance2Line-distanceToTarget);
         CheckWrongDirection();
         CheckDistanceOut();
         bool wd = false;
@@ -120,12 +118,14 @@ public class USVAgent : Agent
         {
             wd = wrongDirection;
             stringChannel.SendStringToPython(finished.ToString() + "," + "True" + "," + distOut.ToString() + "," + this.transform.localPosition.x.ToString() + "," + this.transform.localPosition.z.ToString());
+            // SetReward(-10.0f);
             EndEpisode();
         }
         else if (distanceOut)
         {
             distOut = distanceOut;
             stringChannel.SendStringToPython(finished.ToString() + "," + wd.ToString() + "," + "True" + "," + this.transform.localPosition.x.ToString() + "," + this.transform.localPosition.z.ToString());
+            // SetReward(-10.0f);
             EndEpisode();
         }
 

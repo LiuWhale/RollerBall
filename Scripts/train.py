@@ -4,9 +4,7 @@ from utils import ReplayBuffer
 from mlagents_envs.environment import ActionTuple
 from mlagents_envs.environment import UnityEnvironment
 from mlagents_envs.side_channel.engine_configuration_channel import EngineConfigurationChannel
-from mlagents_envs.side_channel.side_channel import (
-    IncomingMessage,
-)
+from mlagents_envs.side_channel.side_channel import IncomingMessage
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
