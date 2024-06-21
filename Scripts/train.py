@@ -124,17 +124,18 @@ if __name__ == "__main__":
                 if len(info) > 3:
                     traj_x.append(float(info[3]))
                     traj_y.append(float(info[4]))
-                if done:
-                    finished = info[0]
-                    wd = info[1]
-                    distOut = info[2]
+                finished = info[0]
+                wd = info[1]
+                distOut = info[2]
+                if done and (wd == "True" or distOut == "True"):
                     break
                 # Store data in replay buffer before done
                 replay_buffer.add(state, action, next_state, reward, done)
 
                 state = next_state
                 episode_reward += reward
-                
+                if done:
+                    break
                 if stepcounter > args['start_timesteps']:
                     policy.train(replay_buffer, args['batch_size'])
                     traincounter += 1
