@@ -120,14 +120,14 @@ if __name__ == "__main__":
                 if finished == 'True': finished_count += 1
                 next_state, reward, done = get_states(env)
                 string_channel.on_message_received(msg)
+                # Store data in replay buffer before done
+                replay_buffer.add(state, action, next_state, reward, done)
                 if done:
                     info = string_channel.str.split(',')
                     finished = info[0]
                     wd = info[1]
                     distOut = info[2]
                     break
-                replay_buffer.add(state, action, next_state, reward, done)
-
                 state = next_state
                 episode_reward += reward
                 
