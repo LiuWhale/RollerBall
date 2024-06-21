@@ -182,7 +182,7 @@ public class USVAgent : Agent
     }
     public void CheckWrongDirection()
     {
-        float diffAngle = DifferenceAngle();
+        float diffAngle = Mathf.Abs(DifferenceAngle());
         if (diffAngle > 90)
         {
             wrongDirection = true;
