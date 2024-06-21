@@ -105,13 +105,13 @@ public class USVAgent : Agent
         if (wrongDirection)
         {
             wd = wrongDirection;
-            stringChannel.SendStringToPython(finished.ToString() + "," + "True" + "," + distOut.ToString());
+            stringChannel.SendStringToPython(finished.ToString() + "," + "True" + "," + distOut.ToString() + "," + this.transform.localPosition.x.ToString() + "," + this.transform.localPosition.z.ToString());
             EndEpisode();
         }
         else if (distanceOut)
         {
             distOut = distanceOut;
-            stringChannel.SendStringToPython(finished.ToString() + "," + wd.ToString() + "," + "True" + "," + rBody.localPosition.x.ToString() + "," + rBody.localPosition.z.ToString());
+            stringChannel.SendStringToPython(finished.ToString() + "," + wd.ToString() + "," + "True" + "," + this.transform.localPosition.x.ToString() + "," + this.transform.localPosition.z.ToString());
             EndEpisode();
         }
 

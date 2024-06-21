@@ -123,8 +123,9 @@ if __name__ == "__main__":
                 next_state, reward, done = get_states(env)
                 string_channel.on_message_received(msg)
                 info = string_channel.str.split(',')
-                # traj_x.append(float(info[3]))
-                # traj_y.append(float(info[4]))
+                if len(info) > 5:
+                    traj_x.append(float(info[3]))
+                    traj_y.append(float(info[4]))
                 # Store data in replay buffer before done
                 replay_buffer.add(state, action, next_state, reward, done)
                 if done:
@@ -151,7 +152,11 @@ if __name__ == "__main__":
             plt.legend("reward")
             plt.savefig("reward.png")
             plt.close()
-            # print('episode:', i_episode, 'reward:', episode_reward, 'step:', step, 'finished:', finished, 'wd:', wd, 'distOut:', distOut, 'finished_count:', finished_count, 'stepcounter:',stepcounter, 'traincounter:', traincounter)
+            plt.plot(traj_x, traj_y, label="trajectory")
+            plt.legend("trajectory")
+            plt.savefig("trajectory.png")
+            plt.close()
+            print('episode:', i_episode, 'reward:', episode_reward, 'step:', step, 'finished:', finished, 'wd:', wd, 'distOut:', distOut, 'finished_count:', finished_count, 'stepcounter:',stepcounter, 'traincounter:', traincounter)
             if savecounter > 45:
                 break
     except KeyboardInterrupt:
