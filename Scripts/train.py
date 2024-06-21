@@ -48,7 +48,7 @@ if __name__ == "__main__":
     channel = EngineConfigurationChannel()
     string_channel = StringLogChannel()
     msg = IncomingMessage(bytearray())
-    env = UnityEnvironment(base_port = 5006, file_name="/home/whale/下载/UnityBuild/USV.x86_64", \
+    env = UnityEnvironment(file_name="/home/whale/下载/UnityBuild/USV.x86_64", \
         seed=args.seed, no_graphics=args.no_render, side_channels=[channel,string_channel])
     # set time scale of the environment to speed the train up
     channel.set_configuration_parameters(time_scale = args.time_scale)
@@ -119,7 +119,7 @@ if __name__ == "__main__":
                 env.step()
                 if finished == 'True': finished_count += 1
                 next_state, reward, done = get_states(env)
-                finished, wd, distOut = string_channel.on_message_received(msg)
+                string_channel.on_message_received(msg)
                 replay_buffer.add(state, action, next_state, reward, done)
 
                 state = next_state
