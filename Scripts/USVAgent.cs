@@ -70,7 +70,8 @@ public class USVAgent : Agent
 
         sensor.AddObservation(rBody.velocity.x);
         sensor.AddObservation(rBody.velocity.z);
-        sensor.AddObservation(distance2Line);
+        // use 20 to normalize the distance
+        sensor.AddObservation(distance2Line/20);
         // angle velocity
         sensor.AddObservation(rBody.angularVelocity.y);
         sensor.AddObservation(costheta);
