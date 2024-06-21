@@ -21,7 +21,8 @@ class StringLogChannel(SideChannel):
         """
         # We simply read a string from the message and print it.
         tmp = msg.read_string()
-        if tmp == 'True,False,False' or tmp == 'False,True,False' or tmp == 'False,False,True':
+        if tmp == 'True,False,False' or tmp == 'False,True,False' \
+            or tmp == 'False,False,True':
             self.str = tmp
             # print("Class inner:", self.str)
 
