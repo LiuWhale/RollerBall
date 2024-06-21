@@ -80,7 +80,7 @@ public class USVAgent : Agent
     // Update is called once per frame
     public override void OnActionReceived(ActionBuffers actionBuffers)
     {
-        float distanceToTarget = Point2Line(Target.localPosition, Target1.localPosition, this.transform.localPosition);
+        float distanceToTarget = Vector3.Distance(this.transform.localPosition, Target1.localPosition);
         // take action value from actionBuffers
         input.Throttle = actionBuffers.ContinuousActions[0];
         input.Steering = actionBuffers.ContinuousActions[1];
@@ -191,7 +191,7 @@ public class USVAgent : Agent
     public void CheckDistanceOut()
     {
         float distance = Point2Line(Target.localPosition, Target1.localPosition, this.transform.localPosition);
-        if (distance > 10)
+        if (distance > 20)
         {
             distanceOut = true;
         }

@@ -120,6 +120,10 @@ if __name__ == "__main__":
                 if finished == 'True': finished_count += 1
                 next_state, reward, done = get_states(env)
                 string_channel.on_message_received(msg)
+                if string_channel.str != '':
+                    print("string_channel: ", string_channel.str)
+                if done:
+                    break
                 replay_buffer.add(state, action, next_state, reward, done)
 
                 state = next_state
@@ -134,8 +138,6 @@ if __name__ == "__main__":
                     savecounter += 1
                     saved = True
                     print('TD3model', savecounter, 'saved!---------------------------') 
-                if done:
-                    break
             # End of Episode
             rewardlog.append(episode_reward)
             print('episode:', i_episode, 'reward:', episode_reward, 'step:', step, 'finished:', finished, 'wd:', wd, 'distOut:', distOut, 'finished_count:', finished_count, 'traincounter:', traincounter)
