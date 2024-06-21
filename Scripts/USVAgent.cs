@@ -41,14 +41,14 @@ public class USVAgent : Agent
         // Move the target to a new spot
         var distance = Random.value * 20;
         var theta = Random.value * 2 * Mathf.PI;
-        Target.localPosition = new Vector3(distance * Mathf.Cos(theta),
+        Target.localPosition = new Vector3(distance * Mathf.Abs(Mathf.Cos(theta)),
                                            0.5f,
-                                           distance * Mathf.Sin(theta));
+                                           distance * Mathf.Abs(Mathf.Sin(theta)));
         distance = Random.value * 10 + 100;
         theta = Random.value * 0.9f * Mathf.PI - 0.9f * Random.value / 2;
-        Target1.localPosition = new Vector3(distance * Mathf.Cos(theta),
+        Target1.localPosition = new Vector3(distance * Mathf.Abs(Mathf.Cos(theta)),
                                            0.5f,
-                                           distance * Mathf.Sin(theta));
+                                           distance * Mathf.Abs(Mathf.Sin(theta)));
         // Move the camera to the target
         targetCamera.localPosition = new Vector3(Target.localPosition.x, 5, Target.localPosition.z);
         targetCamera1.localPosition = new Vector3(Target1.localPosition.x, 5, Target1.localPosition.z);

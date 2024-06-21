@@ -140,7 +140,7 @@ if __name__ == "__main__":
                     print('TD3model', savecounter, 'saved!---------------------------') 
             # End of Episode
             rewardlog.append(episode_reward)
-            print('episode:', i_episode, 'reward:', episode_reward, 'step:', step, 'finished:', finished, 'wd:', wd, 'distOut:', distOut, 'finished_count:', finished_count, 'traincounter:', traincounter)
+            print('episode:', i_episode, 'reward:', episode_reward, 'step:', step, 'finished:', finished, 'wd:', wd, 'distOut:', distOut, 'finished_count:', finished_count, 'stepcounter:',stepcounter, 'traincounter:', traincounter)
             if savecounter > 45:
                 break
     except KeyboardInterrupt:
