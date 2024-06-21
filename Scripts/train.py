@@ -117,7 +117,6 @@ if __name__ == "__main__":
                 env.set_actions(behavior_name, action_tuple)
                 # Perform a step in the simulation
                 env.step()
-                if finished == 'True': finished_count += 1
                 next_state, reward, done = get_states(env)
                 string_channel.on_message_received(msg)
                 # Store data in replay buffer before done
@@ -139,7 +138,8 @@ if __name__ == "__main__":
                     policy.save('model_'+str(savecounter))
                     savecounter += 1
                     saved = True
-                    print('TD3model', savecounter, 'saved!---------------------------') 
+                    print('TD3model', savecounter, 'saved!---------------------------')
+            if finished == 'True': finished_count += 1
             # End of Episode
             rewardlog.append(episode_reward)
             print('episode:', i_episode, 'reward:', episode_reward, 'step:', step, 'finished:', finished, 'wd:', wd, 'distOut:', distOut, 'finished_count:', finished_count, 'stepcounter:',stepcounter, 'traincounter:', traincounter)
