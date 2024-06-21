@@ -123,7 +123,7 @@ if __name__ == "__main__":
                 next_state, reward, done = get_states(env)
                 string_channel.on_message_received(msg)
                 info = string_channel.str.split(',')
-                if len(info) > 5:
+                if len(info) > 3:
                     traj_x.append(float(info[3]))
                     traj_y.append(float(info[4]))
                 # Store data in replay buffer before done
