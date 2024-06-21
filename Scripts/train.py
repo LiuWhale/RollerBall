@@ -50,7 +50,7 @@ if __name__ == "__main__":
         seed=args.seed, no_graphics=args.no_render, side_channels=[channel,string_channel])
     # set time scale of the environment to speed the train up
     channel.set_configuration_parameters(time_scale = args.time_scale)
-    print("RollerBall environment created.")
+    print("USV environment created.")
     env.reset()
     behavior_name = list(env.behavior_specs)[0]
     spec = env.behavior_specs[behavior_name]
@@ -106,8 +106,10 @@ if __name__ == "__main__":
             for step in range(max_timesteps):
                 stepcounter += 1
                 # Running policy_old:
-                if stepcounter < 20000:
-                    action = np.random.uniform(-1, 1, action_dim)
+                if stepcounter < 5000:
+                    engine = float(1)
+                    rudder = float(np.random.uniform(-1, 1, 1))
+                    action = [engine, rudder]
                 else:
                     noise = np.random.normal(0, max_action * args['expl_noise'], \
                         size=action_dim).clip(-max_action, max_action)
@@ -127,6 +129,7 @@ if __name__ == "__main__":
                 finished = info[0]
                 wd = info[1]
                 distOut = info[2]
+
                 if done and (wd == "True" or distOut == "True"):
                     break
                 # Store data in replay buffer before done

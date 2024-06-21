@@ -118,14 +118,12 @@ public class USVAgent : Agent
         {
             wd = wrongDirection;
             stringChannel.SendStringToPython(finished.ToString() + "," + "True" + "," + distOut.ToString() + "," + this.transform.localPosition.x.ToString() + "," + this.transform.localPosition.z.ToString());
-            // SetReward(-10.0f);
             EndEpisode();
         }
         else if (distanceOut)
         {
             distOut = distanceOut;
             stringChannel.SendStringToPython(finished.ToString() + "," + wd.ToString() + "," + "True" + "," + this.transform.localPosition.x.ToString() + "," + this.transform.localPosition.z.ToString());
-            // SetReward(-10.0f);
             EndEpisode();
         }
 
