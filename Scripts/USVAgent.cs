@@ -17,9 +17,13 @@ public class USVAgent : Agent
     private float headingAngle = 0;
     public Transform Target;
     public Transform Target1;
+    public Transform usvCamera;
     public Transform targetCamera;
     public Transform targetCamera1;
+    public Transform targetCircle;
+    public Transform targetCircle1;
     public TextMeshProUGUI uiPanelText;
+    public LineRenderer lineRenderer;
     private StringLogSideChannel stringChannel;
 
     // Start is called before the first frame update
@@ -52,7 +56,15 @@ public class USVAgent : Agent
         // Move the camera to the target
         targetCamera.localPosition = new Vector3(Target.localPosition.x, 5, Target.localPosition.z);
         targetCamera1.localPosition = new Vector3(Target1.localPosition.x, 5, Target1.localPosition.z);
+        targetCircle.localPosition = new Vector3(Target.localPosition.x, 0.5f, Target.localPosition.z);
+        targetCircle1.localPosition = new Vector3(Target1.localPosition.x, 0.5f, Target1.localPosition.z);
         
+        lineRenderer.positionCount = 2;
+        lineRenderer.SetPosition(0, Target.localPosition);
+        lineRenderer.SetPosition(1, Target1.localPosition);
+        lineRenderer.startWidth = 1f;
+        lineRenderer.endWidth = 1f;
+
         GetHeadingAngle();
         wrongDirection = false;
         distanceOut = false;
@@ -70,8 +82,7 @@ public class USVAgent : Agent
 
         sensor.AddObservation(rBody.velocity.x);
         sensor.AddObservation(rBody.velocity.z);
-        // use 20 to normalize the distance
-        sensor.AddObservation(distance2Line/20);
+        sensor.AddObservation(distance2Line);
         // angle velocity
         sensor.AddObservation(rBody.angularVelocity.y);
         sensor.AddObservation(costheta);
@@ -81,7 +92,10 @@ public class USVAgent : Agent
     // Update is called once per frame
     public override void OnActionReceived(ActionBuffers actionBuffers)
     {
+        usvCamera.localPosition = new Vector3(this.transform.localPosition.x, 35, this.transform.localPosition.z);
         float distanceToTarget = Vector3.Distance(this.transform.localPosition, Target1.localPosition);
+        float distance2Line = Point2Line(Target.localPosition, Target1.localPosition, this.transform.localPosition);
+        distance2Line = distance2Line * JudgeLineSide();
         // take action value from actionBuffers
         input.Throttle = actionBuffers.ContinuousActions[0];
         input.Steering = actionBuffers.ContinuousActions[1];
@@ -117,7 +131,7 @@ public class USVAgent : Agent
         }
 
         // show the info on ui panel
-        uiPanelText.text = "Target x: " + Target.localPosition.x.ToString() + " y: " + Target.localPosition.z.ToString() + "\nTarget1 x: " + Target1.localPosition.x.ToString() + " y: " + Target1.localPosition.z.ToString() + "\nUSV x: " + this.transform.localPosition.x.ToString() + " y: " + this.transform.localPosition.z.ToString() + "\nAngularVel: " + rBody.angularVelocity.y.ToString() + "\nHeadingAngle: " + headingAngle.ToString() + "\nDiffAngle: " + DifferenceAngle().ToString() + "\nDistanceOut: " + distanceOut.ToString() + "\nWrongDirection: " + wd.ToString() + "\ndistanceToTarget: " + distOut.ToString();
+        uiPanelText.text = "Target x: " + Target.localPosition.x.ToString() + " y: " + Target.localPosition.z.ToString() + "\nTarget1 x: " + Target1.localPosition.x.ToString() + " y: " + Target1.localPosition.z.ToString() + "\nUSV x: " + this.transform.localPosition.x.ToString() + " y: " + this.transform.localPosition.z.ToString() + "\nAngularVel: " + rBody.angularVelocity.y.ToString() + "\nHeadingAngle: " + headingAngle.ToString() + "\nDiffAngle: " + DifferenceAngle().ToString() + "\nDistanceOut: " + distanceOut.ToString() + "\nWrongDirection: " + wd.ToString() + "\ndistanceToTarget: " + distOut.ToString() + "\ndistance2Line: " + distance2Line.ToString() + "\ninput.Throttle: " + input.Throttle.ToString() + "\ninput.Steering: " + input.Steering.ToString();
     }
     private void GetHeadingAngle()
     {
@@ -146,7 +160,7 @@ public class USVAgent : Agent
     public float TwoPointAngle(Vector3 p1, Vector3 p2)
     {
         Vector2 p1_2 = new Vector2(p2.x - p1.x, p2.z - p1.z);
-        Vector2 worldDirection = new Vector2(1, 0);
+        Vector2 worldDirection = new Vector2(0, 1);
         float angle = Vector2.Angle(worldDirection, p1_2);
         return angle;
     }
