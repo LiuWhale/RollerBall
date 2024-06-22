@@ -32,8 +32,8 @@ if __name__ == "__main__":
     parser.add_argument('--test', action='store_true', default=False, help='Test the model')
     parser.add_argument('--time-scale', type=float, default=20.0, help='Time scale for unity')
     args = parser.parse_args()
-    max_episodes = 50000
-    max_timesteps = 100000
+    max_episodes = 5000
+    max_timesteps = 500
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # Create a Unity Environment
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     state_dim = spec.observation_specs[0].shape[0]
     # action_dim = spec.action_spec.continuous_size
     action_dim = 1
-    max_action = 1
+    max_action = 0.4
     
     args = {
         'start_timesteps':1e4,
@@ -107,8 +107,8 @@ if __name__ == "__main__":
             for step in range(max_timesteps):
                 stepcounter += 1
                 # Running policy_old:
-                if stepcounter < 5e3:
-                    rudder = float(np.random.uniform(-1, 1, 1))
+                if stepcounter < 1e4:
+                    rudder = float(np.random.uniform(-max_action, max_action, action_dim))
                     action = rudder
                 else:
                     noise = np.random.normal(0, max_action * args['expl_noise'], \
@@ -144,7 +144,7 @@ if __name__ == "__main__":
                     policy.train(replay_buffer, args['batch_size'])
                     traincounter += 1
                 # save TD3model
-                if traincounter % 10000 == 0 and not saved:
+                if traincounter % 5000 == 0 and not saved:
                     policy.save('model_'+str(savecounter))
                     savecounter += 1
                     saved = True

@@ -28,7 +28,7 @@ def get_states(env):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Training arguments')
     parser.add_argument('--episodes', type=int, default=5000, help='Number of episodes to train the model')
-    parser.add_argument('--max-timesteps', type=int, default=2000, help='Number of steps to run the simulation')
+    parser.add_argument('--max-timesteps', type=int, default=500, help='Number of steps to run the simulation')
     parser.add_argument('--no-render', action='store_true', default=False, help='Render the environment')
     parser.add_argument('--seed', type=int, default=0, help='Seed for random number generator')
     parser.add_argument('--time-scale', type=float, default=20.0, help='Time scale for unity')
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     try:    
         replay_buffer = ReplayBuffer(state_dim, action_dim)
         policy = TD3.TD3(**kwargs)
-        policy.load('model_3')
+        policy.load('model_14')
         stepcounter = 0
         traincounter = 1
         savecounter = 1
