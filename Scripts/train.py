@@ -56,7 +56,8 @@ if __name__ == "__main__":
     spec = env.behavior_specs[behavior_name]
 
     state_dim = spec.observation_specs[0].shape[0]
-    action_dim = spec.action_spec.continuous_size
+    # action_dim = spec.action_spec.continuous_size
+    action_dim = 1
     max_action = 1
     
     args = {
@@ -107,17 +108,16 @@ if __name__ == "__main__":
                 stepcounter += 1
                 # Running policy_old:
                 if stepcounter < 5e3:
-                    engine = np.random.normal(-max_action * args['expl_noise'], \
-                        0, size=1)[0] + 1
                     rudder = float(np.random.uniform(-1, 1, 1))
-                    action = [engine, rudder]
+                    action = rudder
                 else:
                     noise = np.random.normal(0, max_action * args['expl_noise'], \
                         size=action_dim).clip(-max_action, max_action)
                     action = policy.select_action(state) + noise
-                action = np.array([action])
+                    action = action[0]
+                actions = np.array([[1, action]])
                 action_tuple = ActionTuple()
-                action_tuple.add_continuous(action)
+                action_tuple.add_continuous(actions)
                 env.set_actions(behavior_name, action_tuple)
                 # Perform a step in the simulation
                 env.step()
@@ -161,8 +161,6 @@ if __name__ == "__main__":
             plt.savefig("trajectory.png")
             plt.close()
             print('episode:', i_episode, 'reward:', episode_reward, 'step:', step, 'finished:', finished, 'wd:', wd, 'distOut:', distOut, 'finished_count:', finished_count, 'stepcounter:',stepcounter, 'traincounter:', traincounter, "buffer_size:", replay_buffer.ptr)
-            if savecounter > 45:
-                break
     except KeyboardInterrupt:
         print("\nTraining interrupted, continue to next cell to save to save the model.")
     finally:

@@ -58,7 +58,8 @@ if __name__ == "__main__":
     spec = env.behavior_specs[behavior_name]
     
     state_dim = spec.observation_specs[0].shape[0]
-    action_dim = spec.action_spec.continuous_size
+    # action_dim = spec.action_spec.continuous_size
+    action_dim = 1
     max_action = 1
     
     args = {
@@ -83,7 +84,7 @@ if __name__ == "__main__":
     try:    
         replay_buffer = ReplayBuffer(state_dim, action_dim)
         policy = TD3.TD3(**kwargs)
-        policy.load('model_45')
+        policy.load('model_3')
         stepcounter = 0
         traincounter = 1
         savecounter = 1
@@ -106,7 +107,8 @@ if __name__ == "__main__":
             for step in range(max_timesteps):
                 stepcounter += 1
                 action = policy.select_action(state)
-                action = np.array([action])
+                action = action[0]
+                action = np.array([[1, action]])
                 action_tuple = ActionTuple()
                 action_tuple.add_continuous(action)
                 env.set_actions(behavior_name, action_tuple)

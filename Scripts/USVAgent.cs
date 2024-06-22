@@ -101,7 +101,7 @@ public class USVAgent : Agent
         
         GetHeadingAngle();
         // Rewards
-        SetReward(-distance2Line-distanceToTarget);
+        SetReward(-distance2Line);
         CheckWrongDirection();
         CheckDistanceOut();
         bool wd = false;
