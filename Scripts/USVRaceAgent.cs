@@ -64,23 +64,21 @@ public class USVRaceAgent : Agent
             time += deltaTime;
         }
     }
-
     // Collect all the observations
     public override void CollectObservations(VectorSensor sensor)
     {
-        // Get passed path length, mini distance to the line and the direction on the line
-        var items = FindClosestPoint(this.transform, lineRenderers[2]);
-        // Debug.Log("Current Time: " + time + " Length: " + items.Item1 + " Distance: " +items.Item2);
+        float longitVelocity = GetLocalVelocity(rBody).z;
+        float angularVelocity = rBody.angularVelocity.y;
         // rudder angle
         float rudderAngle = rudder.rotation.y;
-        float angularVelocity = rBody.angularVelocity.y;
-        float longitVelocity = GetLocalVelocity(rBody).z;
-
+        // Distance to the closest point on the LineRenderer
+        var items = FindClosestPoint(this.transform, lineRenderers[2]);
         float centerDistance = items.Item2;
+        // Difference Angle between the heading angle and the direction on the line
         Vector2 baseDirection = items.Item3;
         Vector2 forwardVector = new Vector2(this.transform.forward.x, this.transform.forward.z);
         float diffAngle = DifferenceAngle(baseDirection, forwardVector) * Mathf.Deg2Rad;
-
+        // Judge
         if (centerDistance > maxOutDistance)
         {
             distanceOut = true;
@@ -89,17 +87,17 @@ public class USVRaceAgent : Agent
         {
             wrongDirection = true;
         }
-
+        // Get the center forward points of the path
         float time = pathCreator.path.GetTimeAtDistance(items.Item1);
         float deltaTime = pathCreator.path.GetTimeAtDistance(deltaDistance);
         List<float> centerPointList = new List<float>();
         Debug.Log("Current Time: " + time + " Length: " + items.Item1 + " Distance: " +items.Item2);
-        for (int i = 0; i < 15; i++)
+        for (int i = 0; i < 13; i++)
         {
+            time += deltaTime;
             Vector3 pt = pathCreator.path.GetPointAtTime(time);
             centerPointList.Add(pt.x);
             centerPointList.Add(pt.y);     
-            time += deltaTime;
         }
 
         sensor.AddObservation(longitVelocity);
@@ -108,9 +106,8 @@ public class USVRaceAgent : Agent
         // angle velocity
         sensor.AddObservation(centerDistance);
         sensor.AddObservation(diffAngle);
-        sensor.AddObservation(0);
+        sensor.AddObservation(centerPointList);
     }
-
     // Update is called once per frame
     public override void OnActionReceived(ActionBuffers actionBuffers)
     {
