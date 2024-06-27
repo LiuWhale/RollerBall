@@ -763,11 +763,10 @@ GameObject:
   - component: {fileID: 119200314}
   - component: {fileID: 119200313}
   - component: {fileID: 119200312}
-  - component: {fileID: 119200318}
   - component: {fileID: 119200308}
   - component: {fileID: 119200317}
+  - component: {fileID: 119200318}
   - component: {fileID: 119200316}
-  - component: {fileID: 119200319}
   m_Layer: 0
   m_Name: USV
   m_TagString: Ship
@@ -1112,7 +1111,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 6
+    VectorObservationSize: 31
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 2
@@ -1154,33 +1153,8 @@ MonoBehaviour:
   - {fileID: 2061629487}
   pathCreator: {fileID: 1378321153}
   rudder: {fileID: 1814505956}
-  maxOutDistance: 20
+  maxOutDistance: 10
   deltaDistance: 1
---- !u!114 &119200319
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 119200305}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: adfaf0af81e9a5270a1699f50958c351, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  color:
-    r: 0
-    g: 0.9811321
-    b: 0.23569043
-    a: 0
-  degree: 120
-  radius: 3
-  radiusInterval: 1
-  m_transform: {fileID: 0}
-  vertexs: []
-  dirs: []
-  startTime: 0
-  intervalTime: 0.1
 --- !u!1 &131640657
 GameObject:
   m_ObjectHideFlags: 0
