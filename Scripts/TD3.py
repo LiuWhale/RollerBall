@@ -153,10 +153,10 @@ class TD3(object):
 
 
 	def save(self, filename):
-		torch.save(self.critic.state_dict(), filename + "_critic")
-		torch.save(self.critic_optimizer.state_dict(), filename + "_critic_optimizer")
+		# torch.save(self.critic.state_dict(), filename + "_critic")
+		# torch.save(self.critic_optimizer.state_dict(), filename + "_critic_optimizer")
 		torch.save(self.actor.state_dict(), filename + "_actor")
-		torch.save(self.actor_optimizer.state_dict(), filename + "_actor_optimizer")
+		# torch.save(self.actor_optimizer.state_dict(), filename + "_actor_optimizer")
 
 
 	def load(self, filename):
@@ -164,3 +164,6 @@ class TD3(object):
 		# self.critic_optimizer.load_state_dict(torch.load(filename + "_critic_optimizer"))
 		self.actor.load_state_dict(torch.load(filename + "_actor"))
 		# self.actor_optimizer.load_state_dict(torch.load(filename + "_actor_optimizer"))
+
+	def load_gpu2cpu(self, filename):
+		self.actor.load_state_dict(torch.load(filename + "_actor", map_location=torch.device('cpu')))

@@ -3,6 +3,7 @@ import numpy as np
 import torch
 import TD3
 import utils
+from ActionMapping import ActionMappingClass
 from mlagents_envs.environment import ActionTuple
 from mlagents_envs.environment import UnityEnvironment
 from mlagents_envs.side_channel.engine_configuration_channel import EngineConfigurationChannel
@@ -47,6 +48,7 @@ if __name__ == "__main__":
     channel.set_configuration_parameters(time_scale = args.time_scale)
     print("USV environment created.")
     env.reset()
+    am = ActionMappingClass()
 
     # set parameters
     behavior_name = list(env.behavior_specs)[0]
@@ -112,8 +114,8 @@ if __name__ == "__main__":
                     noise = np.random.normal(0, max_action * args['expl_noise'], size=action_dim)
                     action = (policy.select_action(ob) + noise).clip(-max_action, max_action)  # clip here
                 # action mapping 
-                # action_in = am.mapping(env.car.spd, env.car.steer, action[0], action[1])
-                action_in = np.array([action])
+                actions = am.mapping(ob[0][0], ob[0][2], action[0], action[1])
+                action_in = np.array([actions])
                 action_tuple = ActionTuple()
                 action_tuple.add_continuous(action_in)
                 env.set_actions(behavior_name, action_tuple)
