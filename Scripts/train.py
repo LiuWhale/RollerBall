@@ -23,7 +23,6 @@ def get_states(env):
         observation =  terminal_steps[agent_id_terminated].obs[0]
         reward = terminal_steps[agent_id_terminated].reward
         terminated = not terminal_steps[agent_id_terminated].interrupted
-    print(observation)
     return observation, reward, terminated
 
 if __name__ == "__main__":
