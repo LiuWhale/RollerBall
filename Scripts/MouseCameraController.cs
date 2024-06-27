@@ -55,12 +55,9 @@ public class MouseCameraControl : MonoBehaviour
     {
         // 获取滚轮输入
         float scroll = Input.GetAxis("Mouse ScrollWheel") * zoomSpeed;
-        
         // 调整视野
         currentFov -= scroll;
         currentFov = Mathf.Clamp(currentFov, minFov, maxFov);
-        Debug.Log(currentFov);
-        
         // 应用视野
         m_camera.fieldOfView = currentFov;
     }

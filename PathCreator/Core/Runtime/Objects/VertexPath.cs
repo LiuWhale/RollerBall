@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using PathCreation.Utility;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 
 namespace PathCreation {
@@ -178,6 +179,11 @@ namespace PathCreation {
         public Vector3 GetPointAtDistance (float dst, EndOfPathInstruction endOfPathInstruction = EndOfPathInstruction.Loop) {
             float t = dst / length;
             return GetPointAtTime (t, endOfPathInstruction);
+        }
+
+        public float GetTimeAtDistance (float dst) {
+            // Debug.Log("length: " + length);
+            return dst / length;
         }
 
         /// Gets forward direction on path based on distance travelled.

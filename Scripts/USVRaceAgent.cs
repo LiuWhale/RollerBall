@@ -6,7 +6,7 @@ using Unity.MLAgents.Sensors;
 using Unity.MLAgents.Actuators;
 using NWH.DWP2.ShipController;
 using TMPro;
-using PathCreation; 
+using PathCreation;
 public class USVRaceAgent : Agent
 {
     Rigidbody rBody;
@@ -20,7 +20,10 @@ public class USVRaceAgent : Agent
     public Transform usvCamera;
     public TextMeshProUGUI uiPanelText;
     public LineRenderer[] lineRenderers;
-   
+    public PathCreator pathCreator;
+    public Transform rudder;
+    public float maxOutDistance = 20;
+    public float deltaDistance = 1.0f;
 
     // Start is called before the first frame update
     void Start()
@@ -36,37 +39,76 @@ public class USVRaceAgent : Agent
         // Reset the velocity, position and rotation
         this.rBody.angularVelocity = Vector3.zero;
         this.rBody.velocity = Vector3.zero;
-        this.transform.localPosition = new Vector3( 0, 0.5f, 0);
+        this.transform.localPosition = new Vector3(0, 0.5f, 1);
         this.rBody.rotation = Quaternion.identity;
-        // Move the target to a new spot
-        var distance = Random.value * 20;
-        var theta = Random.value * 2 * Mathf.PI;
+        // this.rBody.rotation = new Quaternion(0, -90, 0, 0);
         
-        distance = Random.value * 10 + 100;
-        theta = Random.value * 0.9f * Mathf.PI - 0.9f * Random.value / 2;
-        
-        GetHeadingAngle();
+        headingAngle = GetHeadingAngle(rBody);
         wrongDirection = false;
         distanceOut = false;
+
+        var items = FindClosestPoint(this.transform, lineRenderers[2]);
+        float time = pathCreator.path.GetTimeAtDistance(items.Item1);
+        float deltaTime = pathCreator.path.GetTimeAtDistance(deltaDistance);
+        Debug.Log("Current Time: " + time + " Length: " + items.Item1 + " Distance: " +items.Item2);
+        for (int i = 0; i < Mathf.FloorToInt(1 / deltaTime); i++)
+        {
+            Vector3 pt = pathCreator.path.GetPointAtTime(time);
+            // Create cube to show the center point
+            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube.GetComponent<BoxCollider>().isTrigger = true;
+            cube.AddComponent<DestroyOnTrigger>();
+            cube.transform.position = pt;
+            cube.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+
+            time += deltaTime;
+        }
     }
 
     // Collect all the observations
     public override void CollectObservations(VectorSensor sensor)
     {
-        float distance2Line = Point2Line(this.transform.localPosition, this.transform.localPosition, this.transform.localPosition);
-        distance2Line = distance2Line * JudgeLineSide();
+        // Get passed path length, mini distance to the line and the direction on the line
+        var items = FindClosestPoint(this.transform, lineRenderers[2]);
+        // Debug.Log("Current Time: " + time + " Length: " + items.Item1 + " Distance: " +items.Item2);
+        // rudder angle
+        float rudderAngle = rudder.rotation.y;
+        float angularVelocity = rBody.angularVelocity.y;
+        float longitVelocity = GetLocalVelocity(rBody).z;
 
-        float theta = DifferenceAngle();
-        float costheta = Mathf.Cos(theta * Mathf.Deg2Rad);
-        float sintheta = Mathf.Sin(theta * Mathf.Deg2Rad);
+        float centerDistance = items.Item2;
+        Vector2 baseDirection = items.Item3;
+        Vector2 forwardVector = new Vector2(this.transform.forward.x, this.transform.forward.z);
+        float diffAngle = DifferenceAngle(baseDirection, forwardVector) * Mathf.Deg2Rad;
 
-        sensor.AddObservation(rBody.velocity.x);
-        sensor.AddObservation(rBody.velocity.z);
-        sensor.AddObservation(distance2Line);
+        if (centerDistance > maxOutDistance)
+        {
+            distanceOut = true;
+        }
+        if (diffAngle > Mathf.PI/2 || diffAngle < -Mathf.PI/2)
+        {
+            wrongDirection = true;
+        }
+
+        float time = pathCreator.path.GetTimeAtDistance(items.Item1);
+        float deltaTime = pathCreator.path.GetTimeAtDistance(deltaDistance);
+        List<float> centerPointList = new List<float>();
+        Debug.Log("Current Time: " + time + " Length: " + items.Item1 + " Distance: " +items.Item2);
+        for (int i = 0; i < 15; i++)
+        {
+            Vector3 pt = pathCreator.path.GetPointAtTime(time);
+            centerPointList.Add(pt.x);
+            centerPointList.Add(pt.y);     
+            time += deltaTime;
+        }
+
+        sensor.AddObservation(longitVelocity);
+        sensor.AddObservation(angularVelocity);
+        sensor.AddObservation(rudderAngle);
         // angle velocity
-        sensor.AddObservation(rBody.angularVelocity.y);
-        sensor.AddObservation(costheta);
-        sensor.AddObservation(sintheta);
+        sensor.AddObservation(centerDistance);
+        sensor.AddObservation(diffAngle);
+        sensor.AddObservation(0);
     }
 
     // Update is called once per frame
@@ -79,11 +121,11 @@ public class USVRaceAgent : Agent
         input.Throttle = actionBuffers.ContinuousActions[0];
         input.Steering = actionBuffers.ContinuousActions[1];
         
-        GetHeadingAngle();
+        headingAngle = GetHeadingAngle(rBody);
         // Rewards
         SetReward(-distance2Line);
-        CheckWrongDirection();
-        CheckDistanceOut();
+        // CheckWrongDirection();
+        // CheckDistanceOut();
         bool wd = false;
         bool distOut = false;
         bool finished = false;
@@ -107,20 +149,29 @@ public class USVRaceAgent : Agent
         //     EndEpisode();
         // }
         // show the info on ui panel
-        uiPanelText.text = "USV x: " + this.transform.localPosition.x.ToString() + " y: " + this.transform.localPosition.z.ToString() + "\nAngularVel: " + rBody.angularVelocity.y.ToString() + "\nHeadingAngle: " + headingAngle.ToString() + "\nDiffAngle: " + DifferenceAngle().ToString() + "\nDistanceOut: " + distanceOut.ToString() + "\nWrongDirection: " + wd.ToString() + "\ndistanceToTarget: " + distOut.ToString() + "\ndistance2Line: " + distance2Line.ToString() + "\ninput.Throttle: " + input.Throttle.ToString() + "\ninput.Steering: " + input.Steering.ToString();
+        // uiPanelText.text = "USV x: " + this.transform.localPosition.x.ToString() + " y: " + this.transform.localPosition.z.ToString() + "\nAngularVel: " + rBody.angularVelocity.y.ToString() + "\nHeadingAngle: " + headingAngle.ToString() + "\nDiffAngle: " + DifferenceAngle().ToString() + "\nDistanceOut: " + distanceOut.ToString() + "\nWrongDirection: " + wd.ToString() + "\ndistanceToTarget: " + distOut.ToString() + "\ndistance2Line: " + distance2Line.ToString() + "\ninput.Throttle: " + input.Throttle.ToString() + "\ninput.Steering: " + input.Steering.ToString();
     }
-    private void GetHeadingAngle()
+    // Get object velocity in local axis
+    private Vector3 GetLocalVelocity(Rigidbody rigidbody)
     {
-        headingAngle = rBody.rotation.eulerAngles.y;
-        if (headingAngle > 180)
-        {
-            headingAngle -= 360;
-        }
-        else if (headingAngle < -180)
-        {
-            headingAngle += 360;
-        }
+        Vector3 localVelocity = rigidbody.transform.InverseTransformDirection(rigidbody.velocity);
+        return localVelocity;
     }
+    // Get the heading angle of the USV
+    private float GetHeadingAngle(Rigidbody rigidbody)
+    {
+        float angle = rigidbody.rotation.eulerAngles.y;
+        if (angle > 180)
+        {
+            angle -= 360;
+        }
+        else if (angle < -180)
+        {
+            angle += 360;
+        }
+        return angle;
+    }
+    // Calculate the distance between the USV and the line
     public float Point2Line(Vector3 p1, Vector3 p2, Vector3 usvPos)
     {
         //p1->p2的向量
@@ -133,16 +184,10 @@ public class USVRaceAgent : Agent
         float distance = Vector3.Distance(usvPos, p1f + p1);
         return distance;
     }
-    public float TwoPointAngle(Vector3 p1, Vector3 p2)
+    // Calculate the difference angle between the heading angle and the angle between two points in world direction
+    public float DifferenceAngle(Vector2 baseDirection, Vector2 destination)
     {
-        Vector2 p1_2 = new Vector2(p2.x - p1.x, p2.z - p1.z);
-        Vector2 worldDirection = new Vector2(0, 1);
-        float angle = Vector2.Angle(worldDirection, p1_2);
-        return angle;
-    }
-    public float DifferenceAngle()
-    {
-        float diffAngle =  TwoPointAngle(this.transform.localPosition, this.transform.localPosition) - headingAngle;
+        float diffAngle =  Vector2.Angle(baseDirection, destination);
         if (diffAngle > 180)
         {
             diffAngle -= 360;
@@ -172,20 +217,72 @@ public class USVRaceAgent : Agent
             return 0;
         }
     }
-    public void CheckWrongDirection()
+    // public void CheckWrongDirection()
+    // {
+    //     float diffAngle = Mathf.Abs(DifferenceAngle());
+    //     if (diffAngle > 90)
+    //     {
+    //         wrongDirection = true;
+    //     }
+    // }
+    // Check if the USV is out of the line
+    public void CheckDistanceOut(Vector3 p1, Vector3 p2, Vector3 usvPos)
     {
-        float diffAngle = Mathf.Abs(DifferenceAngle());
-        if (diffAngle > 90)
-        {
-            wrongDirection = true;
-        }
-    }
-    public void CheckDistanceOut()
-    {
-        float distance = Point2Line(this.transform.localPosition, this.transform.localPosition, this.transform.localPosition);
-        if (distance > 20)
+        float distance = Point2Line(p1, p2, usvPos);
+        float maxOutDistance = 20;
+        if (distance > maxOutDistance)
         {
             distanceOut = true;
         }
+    }
+    // Find the closest point on the LineRenderer to the object
+    System.Tuple<float, float, Vector2> FindClosestPoint(Transform objectTransform, LineRenderer lineRenderer)
+    {
+        Vector3 objectPosition = objectTransform.position;
+        Vector3[] linePositions = new Vector3[lineRenderer.positionCount];
+        lineRenderer.GetPositions(linePositions);
+
+        float minDistance = Mathf.Infinity;
+        Vector3 closestPoint = Vector3.zero;
+        int closestSegmentIndex = 0;
+        // Debug.Log("Fisrt postion: " + linePositions[0].ToString());
+        // Find the closest point on the LineRenderer to the object
+        for (int i = 0; i < linePositions.Length - 1; i++)
+        {
+            Vector3 A = linePositions[i];
+            Vector3 B = linePositions[i + 1];
+            // 在A和B生成一个cube
+            // GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            // cube.transform.position = A;
+
+            Vector3 AB = B - A;
+            Vector3 AP = objectPosition - A;
+            float t = Vector3.Dot(AP, AB) / Vector3.Dot(AB, AB);
+            t = Mathf.Clamp01(t); // 确保 t 在 [0, 1] 之间，保证点在线段上
+
+            closestPoint = A + t * AB; // 计算线段上的最近点
+            float distance = Vector3.Distance(objectPosition, closestPoint); // 计算距离
+
+            if (distance < minDistance && t >= 0 && t <= 1)
+            {
+                minDistance = distance;
+                closestSegmentIndex = i;
+            }
+        }
+
+        // Debug.Log("Minimum Distance: " + minDistance);
+        // Debug.Log("Closest Point on LineRenderer: " + closestPoint);
+
+        // Calculate the length from LineRenderer start to closest point
+        float lengthFromStart = 0f;
+        for (int i = 0; i < closestSegmentIndex; i++)
+        {
+            lengthFromStart += Vector3.Distance(linePositions[i], linePositions[i + 1]);
+        }
+        lengthFromStart += Vector3.Distance(linePositions[closestSegmentIndex], closestPoint);
+
+        // Debug.Log("Length from LineRenderer start to closest point: " + lengthFromStart);
+        Vector2 lineDirection = new Vector2(closestPoint.x - linePositions[closestSegmentIndex].x, closestPoint.z - linePositions[closestSegmentIndex].z);
+        return System.Tuple.Create(lengthFromStart, minDistance, lineDirection);
     }
 }
