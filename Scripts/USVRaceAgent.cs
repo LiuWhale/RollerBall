@@ -98,10 +98,8 @@ public class USVRaceAgent : Agent
         {
             time += deltaTime;
             Vector3 pt = pathCreator.path.GetPointAtTime(time);
-            centerPointList.Add(pt.x);
-            centerPointList.Add(pt.y);
-            // sensor.AddObservation(pt.x);
-            // sensor.AddObservation(pt.y);     
+            centerPointList.Add(pt.x - this.transform.localPosition.x);
+            centerPointList.Add(pt.z - this.transform.localPosition.z);
         }
 
         sensor.AddObservation(longitVelocity);
