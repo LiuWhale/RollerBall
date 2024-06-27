@@ -117,7 +117,6 @@ public class USVRaceAgent : Agent
         Vector3 velocityChange = currentVelocity - previousVelocity;
         // 计算加速度：速度变化量除以时间变化量
         acceleration = rBody.transform.InverseTransformDirection(velocityChange / Time.deltaTime);
-        Debug.Log("Acc: " + acceleration.ToString());
         // 更新前一帧的速度为当前速度
         previousVelocity = currentVelocity;
     }
@@ -173,7 +172,7 @@ public class USVRaceAgent : Agent
             SetReward(GetLocalVelocity(rBody).z * Mathf.Cos(diffAngle * Mathf.Deg2Rad));
         }
         // show the info on ui panel
-        uiPanelText.text = "USV x: " + this.transform.localPosition.x.ToString() + " y: " + this.transform.localPosition.z.ToString() + "\nAngularVel: " + rBody.angularVelocity.y.ToString() + "\nHeadingAngle: " + headingAngle.ToString() + "\nDiffAngle: " + diffAngle.ToString() + "\nDistanceOut: " + distanceOut.ToString() + "\nWrongDirection: " + wd.ToString() + "\ndistanceToTarget: " + distOut.ToString() + "\ndistance2Line: " + distance2Line.ToString() + "\ninput.Throttle: " + input.Throttle.ToString() + "\ninput.Steering: " + input.Steering.ToString();
+        uiPanelText.text = "USV x: " + this.transform.localPosition.x.ToString() + " y: " + this.transform.localPosition.z.ToString() + "\nAngularVel: " + rBody.angularVelocity.y.ToString() + "\nAcceleration: " + acceleration.ToString() + "\nDiffAngle: " + diffAngle.ToString() + "\nDistanceOut: " + distanceOut.ToString() + "\nWrongDirection: " + wd.ToString() + "\ndistanceToTarget: " + distOut.ToString() + "\ndistance2Line: " + distance2Line.ToString() + "\ninput.Throttle: " + input.Throttle.ToString() + "\ninput.Steering: " + input.Steering.ToString();
     }
     // Get object velocity in local axis
     private Vector3 GetLocalVelocity(Rigidbody rigidbody)
