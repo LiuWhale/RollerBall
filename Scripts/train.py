@@ -3,7 +3,6 @@ import numpy as np
 import torch
 import TD3
 import utils
-from ActionMapping import ActionMappingClass
 from mlagents_envs.environment import ActionTuple
 from mlagents_envs.environment import UnityEnvironment
 from mlagents_envs.side_channel.engine_configuration_channel import EngineConfigurationChannel
@@ -48,13 +47,12 @@ if __name__ == "__main__":
     channel.set_configuration_parameters(time_scale = args.time_scale)
     print("USV environment created.")
     env.reset()
-    am = ActionMappingClass()
 
     # set parameters
     behavior_name = list(env.behavior_specs)[0]
     spec = env.behavior_specs[behavior_name]
     state_dim = spec.observation_specs[0].shape[0]
-    action_dim = 2
+    action_dim = 1
     dt = 0.01
     max_action = 1
     dt = 0.01
@@ -104,19 +102,19 @@ if __name__ == "__main__":
             episode_reward = 0
             episode_timesteps = 0
             finished_count = 0
-            for step in range(10000):
+            for step in range(100000):
                 time = step * dt
                 stepcounter += 1
                 # generate action for carA
                 if stepcounter < args['start_timesteps']:
-                    action = np.random.uniform(-1, 1, action_dim)
+                    rudder = float(np.random.uniform(-max_action, max_action, action_dim))
+                    action = rudder
                 else:
                     noise = np.random.normal(0, max_action * args['expl_noise'], size=action_dim)
                     action = (policy.select_action(ob) + noise).clip(-max_action, max_action)  # clip here
-                # action mapping 
-                # print(ob[0][0] * 20, ob[0][2], action[0], action[1])
-                actions = am.mapping(ob[0][0] * 30, ob[0][2] *  np.pi / 4, action[0], action[1])
-                action_in = np.array([actions])
+                    action = action[0]
+
+                action_in = np.array([[1, action]])
                 action_tuple = ActionTuple()
                 action_tuple.add_continuous(action_in)
                 env.set_actions(behavior_name, action_tuple)

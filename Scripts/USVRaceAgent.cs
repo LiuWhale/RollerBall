@@ -137,8 +137,6 @@ public class USVRaceAgent : Agent
         input.Throttle = actionBuffers.ContinuousActions[0];
         input.Steering = actionBuffers.ContinuousActions[1];
         
-        // CheckWrongDirection();
-        // CheckDistanceOut();
         bool wd = false;
         bool distOut = false;
         bool finished = false;
@@ -146,29 +144,27 @@ public class USVRaceAgent : Agent
         if (distanceToTarget == 0.0f)
         {
             finished = true;
-            AddReward(-100);
-            stringChannel.SendStringToPython("True," + wd.ToString() + "," + distOut.ToString() + "," + this.transform.localPosition.x.ToString() + "," + this.transform.localPosition.z.ToString());
+            AddReward(100);
             EndEpisode();
         }
         else if (wrongDirection)
         {
             wd = wrongDirection;
             AddReward(-100);
-            stringChannel.SendStringToPython(finished.ToString() + "," + "True" + "," + distOut.ToString() + "," + this.transform.localPosition.x.ToString() + "," + this.transform.localPosition.z.ToString());
             EndEpisode();
         }
         else if (distanceOut)
         {
             distOut = distanceOut;
             AddReward(-100);
-            stringChannel.SendStringToPython(finished.ToString() + "," + wd.ToString() + "," + "True" + "," + this.transform.localPosition.x.ToString() + "," + this.transform.localPosition.z.ToString());
             EndEpisode();
         }
         else
         {
             // Rewards
-            SetReward(GetLocalVelocity(rBody).z * Mathf.Cos(diffAngle * Mathf.Deg2Rad));
+            AddReward(GetLocalVelocity(rBody).z * Mathf.Cos(diffAngle * Mathf.Deg2Rad) / 10);
         }
+        stringChannel.SendStringToPython(finished.ToString() + "," + wd.ToString() + "," + distOut.ToString() + "," + this.transform.localPosition.x.ToString() + "," + this.transform.localPosition.z.ToString());
         // show the info on ui panel
         uiPanelText.text = "USV x: " + this.transform.localPosition.x.ToString() + " y: " + this.transform.localPosition.z.ToString() + "\nAngularVel: " + rBody.angularVelocity.y.ToString() + "\nAcceleration: " + acceleration.ToString() + "\nLongutude Speed: " + GetLocalVelocity(rBody).z.ToString() + "\nDiffAngle: " + diffAngle.ToString() + "\nDistanceOut: " + distanceOut.ToString() + "\nWrongDirection: " + wd.ToString() + "\ndistanceToTarget: " + distOut.ToString() + "\ndistance2Line: " + distance2Line.ToString() + "\ninput.Throttle: " + input.Throttle.ToString() + "\ninput.Steering: " + input.Steering.ToString();
     }
