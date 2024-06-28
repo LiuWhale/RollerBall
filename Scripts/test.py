@@ -8,9 +8,7 @@ from mlagents_envs.side_channel.side_channel import IncomingMessage
 from StringLogChannel import StringLogChannel
 import matplotlib.pyplot as plt
 import torch
-import torch.nn as nn
 import argparse
-from tqdm import tqdm
 
 def get_states(env):
     decision_steps, terminal_steps = env.get_steps(behavior_name)
@@ -31,7 +29,7 @@ if __name__ == "__main__":
     parser.add_argument('--max-timesteps', type=int, default=500, help='Number of steps to run the simulation')
     parser.add_argument('--no-render', action='store_true', default=False, help='Render the environment')
     parser.add_argument('--seed', type=int, default=0, help='Seed for random number generator')
-    parser.add_argument('--time-scale', type=float, default=20.0, help='Time scale for unity')
+    parser.add_argument('--time-scale', type=float, default=1.0, help='Time scale for unity')
     args = parser.parse_args()
     
     max_episodes = args.episodes
@@ -49,10 +47,10 @@ if __name__ == "__main__":
     string_channel = StringLogChannel()
     msg = IncomingMessage(bytearray())
     env = UnityEnvironment(file_name="/home/whale/下载/UnityBuild/USV.x86_64", \
-        seed=args.seed, no_graphics=args.no_render, side_channels=[channel,string_channel])
+        seed=args.seed, no_graphics=args.no_render, side_channels=[channel,string_channel], base_port=5415)
     # set time scale of the environment to speed the train up
     channel.set_configuration_parameters(time_scale = args.time_scale)
-    print("RollerBall environment created.")
+    print("USV Race environment created.")
     env.reset()
     behavior_name = list(env.behavior_specs)[0]
     spec = env.behavior_specs[behavior_name]
@@ -84,7 +82,7 @@ if __name__ == "__main__":
     try:    
         replay_buffer = ReplayBuffer(state_dim, action_dim)
         policy = TD3.TD3(**kwargs)
-        policy.load('model_14')
+        policy.load('model')
         stepcounter = 0
         traincounter = 1
         savecounter = 1
