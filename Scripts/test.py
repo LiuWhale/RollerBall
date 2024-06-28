@@ -82,7 +82,7 @@ if __name__ == "__main__":
     try:    
         replay_buffer = ReplayBuffer(state_dim, action_dim)
         policy = TD3.TD3(**kwargs)
-        policy.load('model_19')
+        policy.load('model_first')
         stepcounter = 0
         traincounter = 1
         savecounter = 1
