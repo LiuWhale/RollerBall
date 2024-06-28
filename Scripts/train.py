@@ -9,9 +9,6 @@ from mlagents_envs.side_channel.engine_configuration_channel import EngineConfig
 from mlagents_envs.side_channel.side_channel import IncomingMessage
 from StringLogChannel import StringLogChannel
 
-def process_state(s):
-    return np.reshape(s, [1, -1])
-
 def get_states(env):
     decision_steps, terminal_steps = env.get_steps(behavior_name)
     for agent_id_decisions in decision_steps:
@@ -96,7 +93,6 @@ if __name__ == "__main__":
         for episode in range(10000):
             env.reset()
             ob, r, done = get_states(env)
-            ob = process_state(ob)
             done = False
             saved = False
             episode_reward = 0
@@ -129,7 +125,6 @@ if __name__ == "__main__":
                 finished = info[0]
                 wd = info[1]
                 distOut = info[2]
-                next_ob = process_state(next_ob)  # convert to numpy.array
                 # store replay buffer
                 replay_buffer.add(ob, action, next_ob, r, done)
 

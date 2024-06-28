@@ -16,7 +16,7 @@ public class USVRaceAgent : Agent
     private bool wrongDirection = false;
     private bool distanceOut = false;
     private float headingAngle = 0;
-    private StringLogSideChannel stringChannel;
+    public StringLogSideChannel stringChannel;
     private Vector3 previousVelocity = Vector3.zero;
     private Vector3 acceleration = Vector3.zero;
 
@@ -33,7 +33,6 @@ public class USVRaceAgent : Agent
     {
         rBody = GetComponent<Rigidbody>();
         shipController = this.GetComponent<AdvancedShipController>();
-        stringChannel = this.GetComponent<RegisterStringLogSideChannel>().stringChannel;
         input = shipController.input;
     }
     // Update is called once per episode
@@ -62,6 +61,8 @@ public class USVRaceAgent : Agent
             cube.AddComponent<DestroyOnTrigger>();
             cube.transform.position = pt;
             cube.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            // cube挂载到Road Creator物体下
+            cube.transform.parent = pathCreator.transform;
 
             time += deltaTime;
         }
@@ -133,6 +134,8 @@ public class USVRaceAgent : Agent
         Vector2 baseDirection = items.Item3;
         Vector2 forwardVector = new Vector2(this.transform.forward.x, this.transform.forward.z);
         float diffAngle = DifferenceAngle(baseDirection, forwardVector);
+
+        float travelledTime = pathCreator.path.GetTimeAtDistance(items.Item1);
         // take action value from actionBuffers
         input.Throttle = actionBuffers.ContinuousActions[0];
         input.Steering = actionBuffers.ContinuousActions[1];
@@ -141,7 +144,7 @@ public class USVRaceAgent : Agent
         bool distOut = false;
         bool finished = false;
         // Reached target
-        if (distanceToTarget == 0.0f)
+        if (travelledTime > 0.95f)
         {
             finished = true;
             AddReward(100);
@@ -166,7 +169,10 @@ public class USVRaceAgent : Agent
         }
         stringChannel.SendStringToPython(finished.ToString() + "," + wd.ToString() + "," + distOut.ToString() + "," + this.transform.localPosition.x.ToString() + "," + this.transform.localPosition.z.ToString());
         // show the info on ui panel
-        uiPanelText.text = "USV x: " + this.transform.localPosition.x.ToString() + " y: " + this.transform.localPosition.z.ToString() + "\nAngularVel: " + rBody.angularVelocity.y.ToString() + "\nAcceleration: " + acceleration.ToString() + "\nLongutude Speed: " + GetLocalVelocity(rBody).z.ToString() + "\nDiffAngle: " + diffAngle.ToString() + "\nDistanceOut: " + distanceOut.ToString() + "\nWrongDirection: " + wd.ToString() + "\ndistanceToTarget: " + distOut.ToString() + "\ndistance2Line: " + distance2Line.ToString() + "\ninput.Throttle: " + input.Throttle.ToString() + "\ninput.Steering: " + input.Steering.ToString();
+        if (uiPanelText != null)
+        {
+            uiPanelText.text = "USV x: " + this.transform.localPosition.x.ToString() + " y: " + this.transform.localPosition.z.ToString() + "\nAngularVel: " + rBody.angularVelocity.y.ToString() + "\nAcceleration: " + acceleration.ToString() + "\nLongutude Speed: " + GetLocalVelocity(rBody).z.ToString() + "\nDiffAngle: " + diffAngle.ToString() + "\nDistanceOut: " + distanceOut.ToString() + "\nWrongDirection: " + wd.ToString() + "\ndistanceToTarget: " + distOut.ToString() + "\ndistance2Line: " + distance2Line.ToString() + "\ninput.Throttle: " + input.Throttle.ToString() + "\ninput.Steering: " + input.Steering.ToString();
+        } 
     }
     // Get object velocity in local axis
     private Vector3 GetLocalVelocity(Rigidbody rigidbody)
