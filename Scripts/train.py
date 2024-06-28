@@ -114,7 +114,8 @@ if __name__ == "__main__":
                     noise = np.random.normal(0, max_action * args['expl_noise'], size=action_dim)
                     action = (policy.select_action(ob) + noise).clip(-max_action, max_action)  # clip here
                 # action mapping 
-                actions = am.mapping(ob[0][0], ob[0][2], action[0], action[1])
+                # print(ob[0][0] * 20, ob[0][2], action[0], action[1])
+                actions = am.mapping(ob[0][0] * 30, ob[0][2] *  np.pi / 4, action[0], action[1])
                 action_in = np.array([actions])
                 action_tuple = ActionTuple()
                 action_tuple.add_continuous(action_in)

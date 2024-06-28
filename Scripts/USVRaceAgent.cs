@@ -98,15 +98,15 @@ public class USVRaceAgent : Agent
         {
             time += deltaTime;
             Vector3 pt = pathCreator.path.GetPointAtTime(time);
-            centerPointList.Add(pt.x - this.transform.localPosition.x);
-            centerPointList.Add(pt.z - this.transform.localPosition.z);
+            centerPointList.Add(pt.x / 100 - this.transform.localPosition.x / 100);
+            centerPointList.Add(pt.z / 100 - this.transform.localPosition.z / 100);
         }
 
-        sensor.AddObservation(longitVelocity);
-        sensor.AddObservation(angularVelocity);
-        sensor.AddObservation(rudderAngle);
-        sensor.AddObservation(centerDistance);
-        sensor.AddObservation(diffAngle);
+        sensor.AddObservation(longitVelocity / 13.86f);
+        sensor.AddObservation(angularVelocity / Mathf.PI * 2);
+        sensor.AddObservation(rudderAngle / Mathf.PI * 4);
+        sensor.AddObservation(centerDistance / maxOutDistance);
+        sensor.AddObservation(diffAngle / Mathf.PI);
         sensor.AddObservation(centerPointList);
 
         // 计算当前速度
@@ -170,7 +170,7 @@ public class USVRaceAgent : Agent
             SetReward(GetLocalVelocity(rBody).z * Mathf.Cos(diffAngle * Mathf.Deg2Rad));
         }
         // show the info on ui panel
-        uiPanelText.text = "USV x: " + this.transform.localPosition.x.ToString() + " y: " + this.transform.localPosition.z.ToString() + "\nAngularVel: " + rBody.angularVelocity.y.ToString() + "\nAcceleration: " + acceleration.ToString() + "\nDiffAngle: " + diffAngle.ToString() + "\nDistanceOut: " + distanceOut.ToString() + "\nWrongDirection: " + wd.ToString() + "\ndistanceToTarget: " + distOut.ToString() + "\ndistance2Line: " + distance2Line.ToString() + "\ninput.Throttle: " + input.Throttle.ToString() + "\ninput.Steering: " + input.Steering.ToString();
+        uiPanelText.text = "USV x: " + this.transform.localPosition.x.ToString() + " y: " + this.transform.localPosition.z.ToString() + "\nAngularVel: " + rBody.angularVelocity.y.ToString() + "\nAcceleration: " + acceleration.ToString() + "\nLongutude Speed: " + GetLocalVelocity(rBody).z.ToString() + "\nDiffAngle: " + diffAngle.ToString() + "\nDistanceOut: " + distanceOut.ToString() + "\nWrongDirection: " + wd.ToString() + "\ndistanceToTarget: " + distOut.ToString() + "\ndistance2Line: " + distance2Line.ToString() + "\ninput.Throttle: " + input.Throttle.ToString() + "\ninput.Steering: " + input.Steering.ToString();
     }
     // Get object velocity in local axis
     private Vector3 GetLocalVelocity(Rigidbody rigidbody)
