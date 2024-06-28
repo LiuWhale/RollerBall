@@ -128,7 +128,8 @@ public class USVRaceAgent : Agent
         Vector3[] linePositions = new Vector3[lineRenderers[2].positionCount];
         lineRenderers[2].GetPositions(linePositions);
         Vector3 targetPoint = linePositions[0];
-        float distanceToTarget = Vector3.Distance(targetPoint, this.transform.localPosition);
+        Vector3 closetPoint = linePositions[items.Item4];
+        float distanceToTarget = Vector3.Distance(targetPoint, closetPoint);
         float distance2Line = items.Item2;
 
         Vector2 baseDirection = items.Item3;
@@ -139,12 +140,12 @@ public class USVRaceAgent : Agent
         // take action value from actionBuffers
         input.Throttle = actionBuffers.ContinuousActions[0];
         input.Steering = actionBuffers.ContinuousActions[1];
-        
+
         bool wd = false;
         bool distOut = false;
         bool finished = false;
         // Reached target
-        if (travelledTime > 0.95f)
+        if (distanceToTarget < 0.2f)
         {
             finished = true;
             AddReward(100);
@@ -259,7 +260,7 @@ public class USVRaceAgent : Agent
         }
     }
     // Find the closest point on the LineRenderer to the object
-    System.Tuple<float, float, Vector2> FindClosestPoint(Transform objectTransform, LineRenderer lineRenderer)
+    System.Tuple<float, float, Vector2, int> FindClosestPoint(Transform objectTransform, LineRenderer lineRenderer)
     {
         Vector3 objectPosition = objectTransform.position;
         Vector3[] linePositions = new Vector3[lineRenderer.positionCount];
@@ -301,6 +302,6 @@ public class USVRaceAgent : Agent
         lengthFromStart += Vector3.Distance(linePositions[closestSegmentIndex], closestPoint);
 
         Vector2 lineDirection = new Vector2(linePositions[closestSegmentIndex + 1].x - linePositions[closestSegmentIndex].x, linePositions[closestSegmentIndex + 1].z - linePositions[closestSegmentIndex].z);
-        return System.Tuple.Create(lengthFromStart, minDistance, lineDirection);
+        return System.Tuple.Create(lengthFromStart, minDistance, lineDirection, closestSegmentIndex);
     }
 }

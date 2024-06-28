@@ -182,7 +182,6 @@ namespace PathCreation {
         }
 
         public float GetTimeAtDistance (float dst) {
-            // Debug.Log("length: " + length);
             return dst / length;
         }
 
