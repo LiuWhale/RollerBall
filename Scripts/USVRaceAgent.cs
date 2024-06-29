@@ -7,6 +7,8 @@ using Unity.MLAgents.Actuators;
 using NWH.DWP2.ShipController;
 using TMPro;
 using PathCreation;
+using System.Text;
+using Unity.Android.Gradle.Manifest;
 public class USVRaceAgent : Agent
 {
     Rigidbody rBody;
@@ -15,11 +17,11 @@ public class USVRaceAgent : Agent
     ShipInputHandler input;
     private bool wrongDirection = false;
     private bool distanceOut = false;
-    private float headingAngle = 0;
     public StringLogSideChannel stringChannel;
     private Vector3 previousVelocity = Vector3.zero;
     private Vector3 acceleration = Vector3.zero;
     private float raceScale;
+    private DataSwitcher dataSwitcher;
 
     public Transform usvCamera;
     public TextMeshProUGUI uiPanelText;
@@ -27,7 +29,7 @@ public class USVRaceAgent : Agent
     public PathCreator pathCreator;
     public Transform rudder;
     public float maxOutDistance = 10;
-    public float deltaDistance = 5.0f;
+    public float deltaDistance = 10.0f;
     public float driectionDistance = 0.5f;
 
     // Start is called before the first frame update
@@ -35,6 +37,17 @@ public class USVRaceAgent : Agent
     {
         rBody = GetComponent<Rigidbody>();
         shipController = this.GetComponent<AdvancedShipController>();
+        input = shipController.input;
+        stringChannel = GameObject.Find("UI").GetComponent<RegisterStringLogSideChannel>().stringChannel;
+        dataSwitcher = GameObject.Find("UI").GetComponent<DataSwitcher>();
+
+        // Notice: the scale is important for travelled length and others about the race path!!!
+        raceScale = pathCreator.transform.localScale.x;
+        driectionDistance /= raceScale;
+
+        dataSwitcher.switchDataShow = new DataSwitcher.SwitchDataShow(()=>{
+                uiPanelText.enabled = !uiPanelText.enabled;
+            });
     }
     // Update is called once per episode
     public override void OnEpisodeBegin()
@@ -46,17 +59,8 @@ public class USVRaceAgent : Agent
         this.rBody.rotation = Quaternion.identity;
         // this.rBody.rotation = new Quaternion(0, -90, 0, 0);
         
-        headingAngle = GetHeadingAngle(rBody);
         wrongDirection = false;
         distanceOut = false;
-
-        input = shipController.input;
-        stringChannel = GameObject.Find("UI").GetComponent<RegisterStringLogSideChannel>().stringChannel;
-
-        // Notice: the scale is important for travelled length and others about the race path!!!
-        raceScale = pathCreator.transform.localScale.x;
-        deltaDistance /= raceScale;
-        driectionDistance /= raceScale;
 
         var items = FindClosestPoint(this.transform, lineRenderers[2]);
         float time = pathCreator.path.GetTimeAtDistance(items.Item1);
@@ -65,13 +69,13 @@ public class USVRaceAgent : Agent
         {
             Vector3 pt = pathCreator.path.GetPointAtTime(time);
             // Create cube to show the center point
-            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cube.GetComponent<BoxCollider>().isTrigger = true;
-            cube.AddComponent<DestroyOnTrigger>();
-            cube.transform.position = pt;
-            cube.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-            // cube挂载到Road Creator物体下
-            cube.transform.parent = pathCreator.transform;
+            // GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            // cube.GetComponent<BoxCollider>().isTrigger = true;
+            // cube.AddComponent<DestroyOnTrigger>();
+            // cube.transform.position = pt;
+            // cube.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            // // cube挂载到Road Creator物体下
+            // cube.transform.parent = pathCreator.transform;
 
             time += deltaTime;
         }
@@ -123,7 +127,7 @@ public class USVRaceAgent : Agent
         sensor.AddObservation(centerPointList);
 
         // 计算当前速度
-        Vector3 currentVelocity = GetComponent<Rigidbody>().velocity;
+        Vector3 currentVelocity = rBody.velocity;
         // 计算速度变化量
         Vector3 velocityChange = currentVelocity - previousVelocity;
         // 计算加速度：速度变化量除以时间变化量
@@ -160,6 +164,8 @@ public class USVRaceAgent : Agent
         bool wd = false;
         bool distOut = false;
         bool finished = false;
+
+        // Rewards
         // Reached target
         if (distanceToTarget < 0.2f)
         {
@@ -181,14 +187,27 @@ public class USVRaceAgent : Agent
         }
         else
         {
-            // Rewards
             AddReward(GetLocalVelocity(rBody).z * Mathf.Cos(diffAngle * Mathf.Deg2Rad) / 10);
         }
         stringChannel.SendStringToPython(finished.ToString() + "," + wd.ToString() + "," + distOut.ToString() + "," + this.transform.localPosition.x.ToString() + "," + this.transform.localPosition.z.ToString());
         // show the info on ui panel
-        if (uiPanelText != null)
+        if (uiPanelText != null && uiPanelText.enabled)
         {
-            uiPanelText.text = "USV x: " + this.transform.localPosition.x.ToString() + " y: " + this.transform.localPosition.z.ToString() + "\nAngularVel: " + rBody.angularVelocity.y.ToString() + "\nAcceleration: " + acceleration.ToString() + "\nLongutude Speed: " + GetLocalVelocity(rBody).z.ToString() + "\nTravelled length: " + (items.Item1 * raceScale).ToString() + "\nClosest Point: " + closetPoint.ToString() +"\nDiffAngle: " + diffAngle.ToString() + "\nDistanceOut: " + distanceOut.ToString() + "\nWrongDirection: " + wd.ToString() + "\ndistanceToTarget: " + distOut.ToString() + "\ndistance2Line: " + distance2Line.ToString() + "\ninput.Throttle: " + input.Throttle.ToString() + "\ninput.Steering: " + input.Steering.ToString();
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("USV x: " + this.transform.localPosition.x.ToString() + " y: " + this.transform.localPosition.z.ToString());
+            sb.AppendLine("AngularVel: " + rBody.angularVelocity.y.ToString());
+            sb.AppendLine("Acceleration: " + acceleration.ToString());
+            sb.AppendLine("Longutude Speed: " + GetLocalVelocity(rBody).z.ToString());
+            sb.AppendLine("Travelled length: " + (items.Item1 * raceScale).ToString());
+            sb.AppendLine("Closest Point: " + closetPoint.ToString());
+            sb.AppendLine("DiffAngle: " + diffAngle.ToString());
+            sb.AppendLine("DistanceOut: " + distanceOut.ToString());
+            sb.AppendLine("WrongDirection: " + wd.ToString());
+            sb.AppendLine("distanceToTarget: " + distOut.ToString());
+            sb.AppendLine("distance2Line: " + distance2Line.ToString());
+            sb.AppendLine("input.Throttle: " + input.Throttle.ToString());
+            sb.AppendLine("input.Steering: " + input.Steering.ToString());
+            uiPanelText.text = sb.ToString();
         }
     }
     // Get object velocity in local axis
@@ -196,20 +215,6 @@ public class USVRaceAgent : Agent
     {
         Vector3 localVelocity = rigidbody.transform.InverseTransformDirection(rigidbody.velocity);
         return localVelocity;
-    }
-    // Get the heading angle of the USV
-    private float GetHeadingAngle(Rigidbody rigidbody)
-    {
-        float angle = rigidbody.rotation.eulerAngles.y;
-        if (angle > 180)
-        {
-            angle -= 360;
-        }
-        else if (angle < -180)
-        {
-            angle += 360;
-        }
-        return angle;
     }
     // Calculate the distance between the USV and the line
     public float Point2Line(Vector3 p1, Vector3 p2, Vector3 usvPos)
