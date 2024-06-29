@@ -39,7 +39,7 @@ if __name__ == "__main__":
     string_channel = StringLogChannel()
     msg = IncomingMessage(bytearray())
     env = UnityEnvironment(file_name="/home/whale/下载/UnityBuild/USV.x86_64", \
-        seed=args.seed, no_graphics=args.no_render, side_channels=[channel,string_channel], num_areas=10)
+        seed=args.seed, no_graphics=args.no_render, side_channels=[channel,string_channel])
     # set time scale of the environment to speed the train up
     channel.set_configuration_parameters(time_scale = args.time_scale)
     print("USV environment created.")

@@ -47,7 +47,7 @@ public class MultiTrainingAreaManagement : MonoBehaviour
 
             uSVRaceAgents.Add(trainingArea.transform.Find("USV").GetComponent<USVRaceAgent>());
             uSVRaceAgents[uSVRaceAgents.Count - 1].uiPanelText = null;
-            uSVRaceAgents[uSVRaceAgents.Count - 1].stringChannel = this.GetComponent<RegisterStringLogSideChannel>().stringChannel;
+            // uSVRaceAgents[uSVRaceAgents.Count - 1].stringChannel = this.GetComponent<RegisterStringLogSideChannel>().stringChannel;
         }
         // 设置第一个trainingArea的cameraTargetTextures为cameraTexture
         cameraTargetTextures[0] = cameraTexture;

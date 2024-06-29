@@ -35,11 +35,6 @@ public class USVRaceAgent : Agent
     {
         rBody = GetComponent<Rigidbody>();
         shipController = this.GetComponent<AdvancedShipController>();
-        input = shipController.input;
-        // Notice: the scale is important for travelled length and others about the race path!!!
-        raceScale = pathCreator.transform.localScale.x;
-        deltaDistance /= raceScale;
-        driectionDistance /= raceScale;
     }
     // Update is called once per episode
     public override void OnEpisodeBegin()
@@ -54,6 +49,14 @@ public class USVRaceAgent : Agent
         headingAngle = GetHeadingAngle(rBody);
         wrongDirection = false;
         distanceOut = false;
+
+        input = shipController.input;
+        stringChannel = GameObject.Find("UI").GetComponent<RegisterStringLogSideChannel>().stringChannel;
+
+        // Notice: the scale is important for travelled length and others about the race path!!!
+        raceScale = pathCreator.transform.localScale.x;
+        deltaDistance /= raceScale;
+        driectionDistance /= raceScale;
 
         var items = FindClosestPoint(this.transform, lineRenderers[2]);
         float time = pathCreator.path.GetTimeAtDistance(items.Item1);
