@@ -139,7 +139,7 @@ public class USVRaceAgent : Agent
         Vector3[] linePositions = new Vector3[lineRenderers[2].positionCount];
         lineRenderers[2].GetPositions(linePositions);
         Vector3 targetPoint = linePositions[0];
-        Vector3 closetPoint = linePositions[items.Item4];
+        Vector3 closetPoint = items.Item3;
         Vector3 p1 = pathCreator.path.GetPointAtTime(time);
         Vector3 p2 = pathCreator.path.GetPointAtTime(secondTime);
         Vector2 baseDirection = new Vector2(p2.x - p1.x, p2.z - p1.z);
@@ -150,7 +150,6 @@ public class USVRaceAgent : Agent
         float distanceToTarget = Vector3.Distance(targetPoint, closetPoint);
         float distance2Line = items.Item2 * side;
 
-        float travelledTime = pathCreator.path.GetTimeAtDistance(items.Item1);
         // take action value from actionBuffers
         input.Throttle = actionBuffers.ContinuousActions[0];
         input.Steering = actionBuffers.ContinuousActions[1];
@@ -186,7 +185,7 @@ public class USVRaceAgent : Agent
         // show the info on ui panel
         if (uiPanelText != null)
         {
-            uiPanelText.text = "USV x: " + this.transform.localPosition.x.ToString() + " y: " + this.transform.localPosition.z.ToString() + "\nAngularVel: " + rBody.angularVelocity.y.ToString() + "\nAcceleration: " + acceleration.ToString() + "\nLongutude Speed: " + GetLocalVelocity(rBody).z.ToString() + "\nCloset point: " + items.Item5.ToString() + "\nTravelled length: " + (items.Item1 * raceScale).ToString() + "\ntime: " + time.ToString() + "\nSecond time: " + secondTime.ToString() +"\nFisrt Point: " + p1.ToString() + "\nSecond Point: " + p2.ToString() + "\nCloset Point: " + linePositions[items.Item4].ToString() + "\nDiffAngle: " + diffAngle.ToString() + "\nDistanceOut: " + distanceOut.ToString() + "\nWrongDirection: " + wd.ToString() + "\ndistanceToTarget: " + distOut.ToString() + "\ndistance2Line: " + distance2Line.ToString() + "\ninput.Throttle: " + input.Throttle.ToString() + "\ninput.Steering: " + input.Steering.ToString();
+            uiPanelText.text = "USV x: " + this.transform.localPosition.x.ToString() + " y: " + this.transform.localPosition.z.ToString() + "\nAngularVel: " + rBody.angularVelocity.y.ToString() + "\nAcceleration: " + acceleration.ToString() + "\nLongutude Speed: " + GetLocalVelocity(rBody).z.ToString() + "\nTravelled length: " + (items.Item1 * raceScale).ToString() + "\nClosest Point: " + closetPoint.ToString() +"\nDiffAngle: " + diffAngle.ToString() + "\nDistanceOut: " + distanceOut.ToString() + "\nWrongDirection: " + wd.ToString() + "\ndistanceToTarget: " + distOut.ToString() + "\ndistance2Line: " + distance2Line.ToString() + "\ninput.Throttle: " + input.Throttle.ToString() + "\ninput.Steering: " + input.Steering.ToString();
         }
     }
     // Get object velocity in local axis
@@ -256,7 +255,7 @@ public class USVRaceAgent : Agent
         }
     }
     // Find the closest point on the LineRenderer to the object
-    System.Tuple<float, float, Vector2, int, Vector3> FindClosestPoint(Transform objectTransform, LineRenderer lineRenderer)
+    System.Tuple<float, float, Vector3> FindClosestPoint(Transform objectTransform, LineRenderer lineRenderer)
     {
         Vector3 objectPosition = objectTransform.position;
         Vector3[] linePositions = new Vector3[lineRenderer.positionCount];
@@ -270,9 +269,6 @@ public class USVRaceAgent : Agent
         {
             Vector3 A = linePositions[i];
             Vector3 B = linePositions[i + 1];
-            // 在A和B生成一个cube
-            // GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            // cube.transform.position = A;
 
             Vector3 AB = B - A;
             Vector3 AP = objectPosition - A;
@@ -280,13 +276,14 @@ public class USVRaceAgent : Agent
             t = Mathf.Clamp01(t); // 确保 t 在 [0, 1] 之间，保证点在线段上
             if (t >= 0 && t <= 1)
             {
-                closestPoint = A + t * AB; // 计算线段上的最近点
-                float distance = Vector3.Distance(objectPosition, closestPoint); // 计算距离
+                Vector3 tmpPoint = A + t * AB; // 计算线段上的最近点
+                float distance = Vector3.Distance(objectPosition, tmpPoint); // 计算距离
 
                 if (distance < minDistance)
                 {
                     minDistance = distance;
                     closestSegmentIndex = i;
+                    closestPoint = tmpPoint;
                 }
             }
         }
@@ -297,9 +294,7 @@ public class USVRaceAgent : Agent
         {
             lengthFromStart += Vector3.Distance(linePositions[i], linePositions[i + 1]);
         }
-        // lengthFromStart += Vector3.Distance(linePositions[closestSegmentIndex], closestPoint);
-
-        Vector2 lineDirection = new Vector2(linePositions[closestSegmentIndex + 1].x - linePositions[closestSegmentIndex].x, linePositions[closestSegmentIndex + 1].z - linePositions[closestSegmentIndex].z);
-        return System.Tuple.Create(lengthFromStart / raceScale, minDistance, lineDirection, closestSegmentIndex, closestPoint);
+        lengthFromStart += Vector3.Distance(linePositions[closestSegmentIndex], closestPoint);
+        return System.Tuple.Create(lengthFromStart / raceScale, minDistance, closestPoint);
     }
 }
