@@ -25,8 +25,6 @@ public class MultiTrainingAreaManagement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        cameraSwitcher = this.AddComponent<CameraSwitcher>();
-        cameraSwitcher.switchButton = switchButton;
         trainingAreaSwitcher = this.GetComponent<TrainingAreaSwitcher>();
         // 实例化trainingAreaPrefab，位置通过xSpace和ySpace偏移进行计算，并用rows进行排列排序
         for (int i = 0; i < trainingAreaCount; i++)
@@ -49,26 +47,26 @@ public class MultiTrainingAreaManagement : MonoBehaviour
             uSVRaceAgents[uSVRaceAgents.Count - 1].uiPanelText = null;
             // uSVRaceAgents[uSVRaceAgents.Count - 1].stringChannel = this.GetComponent<RegisterStringLogSideChannel>().stringChannel;
         }
-        // 设置第一个trainingArea的cameraTargetTextures为cameraTexture
-        cameraTargetTextures[0] = cameraTexture;
-        usvCameras[0].gameObject.SetActive(true);
-        upDownCameras[0].gameObject.SetActive(true);
-        followCameras[0].gameObject.SetActive(true);
-        uSVRaceAgents[0].uiPanelText = textMeshProUGUI;
+        if (trainingAreaCount > 0)
+        {
+            cameraSwitcher = this.AddComponent<CameraSwitcher>();
+            cameraSwitcher.switchButton = switchButton;
+            
+            // 设置第一个trainingArea的cameraTargetTextures为cameraTexture
+            cameraTargetTextures[0] = cameraTexture;
+            usvCameras[0].gameObject.SetActive(true);
+            upDownCameras[0].gameObject.SetActive(true);
+            followCameras[0].gameObject.SetActive(true);
+            uSVRaceAgents[0].uiPanelText = textMeshProUGUI;
 
-        cameraSwitcher.camera1 = followCameras[0].Find("Vehicle Camera Cinemachine").GetComponent<Camera>();
-        cameraSwitcher.camera2 = upDownCameras[0].GetComponent<Camera>();
+            cameraSwitcher.camera1 = followCameras[0].Find("Vehicle Camera Cinemachine").GetComponent<Camera>();
+            cameraSwitcher.camera2 = upDownCameras[0].GetComponent<Camera>();
 
-        trainingAreaSwitcher.cameraTargetTextures = cameraTargetTextures;
-        trainingAreaSwitcher.usvCameras = usvCameras;
-        trainingAreaSwitcher.upDownCameras = upDownCameras;
-        trainingAreaSwitcher.followCameras = followCameras;
-        trainingAreaSwitcher.uSVRaceAgents = uSVRaceAgents;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+            trainingAreaSwitcher.cameraTargetTextures = cameraTargetTextures;
+            trainingAreaSwitcher.usvCameras = usvCameras;
+            trainingAreaSwitcher.upDownCameras = upDownCameras;
+            trainingAreaSwitcher.followCameras = followCameras;
+            trainingAreaSwitcher.uSVRaceAgents = uSVRaceAgents;
+        }
     }
 }

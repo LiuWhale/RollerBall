@@ -8,7 +8,7 @@ using NWH.DWP2.ShipController;
 using TMPro;
 using PathCreation;
 using System.Text;
-using Unity.Android.Gradle.Manifest;
+
 public class USVRaceAgent : Agent
 {
     Rigidbody rBody;
@@ -182,6 +182,8 @@ public class USVRaceAgent : Agent
         sc.Append(distOut.ToString());
         sc.Append(",");
         sc.Append(this.transform.localPosition.x.ToString());
+        sc.Append(",");
+        sc.Append(this.transform.localPosition.z.ToString());
         stringChannel.SendStringToPython(sc.ToString());
 
         // show the info on ui panel
