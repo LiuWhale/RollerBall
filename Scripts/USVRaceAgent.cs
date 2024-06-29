@@ -13,16 +13,13 @@ public class USVRaceAgent : Agent
 {
     Rigidbody rBody;
     AdvancedShipController shipController;
-    List<Engine> engines;
     ShipInputHandler input;
     private bool wrongDirection = false;
     private bool distanceOut = false;
-    public StringLogSideChannel stringChannel;
-    private Vector3 previousVelocity = Vector3.zero;
-    private Vector3 acceleration = Vector3.zero;
     private float raceScale;
     private DataSwitcher dataSwitcher;
 
+    public StringLogSideChannel stringChannel;
     public Transform usvCamera;
     public TextMeshProUGUI uiPanelText;
     public LineRenderer[] lineRenderers;
@@ -47,11 +44,16 @@ public class USVRaceAgent : Agent
 
         dataSwitcher.switchDataShow = new DataSwitcher.SwitchDataShow(()=>{
                 uiPanelText.enabled = !uiPanelText.enabled;
+                usvCamera.gameObject.SetActive(!usvCamera.gameObject.activeSelf);
+                lineRenderers[0].gameObject.SetActive(!lineRenderers[0].gameObject.activeSelf);
+                lineRenderers[1].gameObject.SetActive(!lineRenderers[1].gameObject.activeSelf);
             });
     }
     // Update is called once per episode
     public override void OnEpisodeBegin()
     {
+        // Clear
+        System.GC.Collect();
         // Reset the velocity, position and rotation
         this.rBody.angularVelocity = Vector3.zero;
         this.rBody.velocity = Vector3.zero;
@@ -93,11 +95,7 @@ public class USVRaceAgent : Agent
         float secondTime = pathCreator.path.GetTimeAtDistance(items.Item1 + 0.1f);
         float centerDistance = items.Item2;
         // Difference Angle between the heading angle and the direction on the line
-        Vector3 p1 = pathCreator.path.GetPointAtTime(time);
-        Vector3 p2 = pathCreator.path.GetPointAtTime(secondTime);
-        Vector2 baseDirection = new Vector2(p2.x - p1.x, p2.z - p1.z);
-        Vector2 forwardVector = new Vector2(this.transform.forward.x, this.transform.forward.z);
-        float diffAngle = DifferenceAngle(baseDirection, forwardVector) * Mathf.Deg2Rad;
+        float diffAngle = DifferenceAngle(time, secondTime) * Mathf.Deg2Rad;
         // Judge distanceOut and wrongDirection
         if (centerDistance > maxOutDistance)
         {
@@ -125,15 +123,6 @@ public class USVRaceAgent : Agent
         sensor.AddObservation(centerDistance / maxOutDistance);
         sensor.AddObservation(diffAngle / Mathf.PI);
         sensor.AddObservation(centerPointList);
-
-        // 计算当前速度
-        Vector3 currentVelocity = rBody.velocity;
-        // 计算速度变化量
-        Vector3 velocityChange = currentVelocity - previousVelocity;
-        // 计算加速度：速度变化量除以时间变化量
-        acceleration = rBody.transform.InverseTransformDirection(velocityChange / Time.deltaTime);
-        // 更新前一帧的速度为当前速度
-        previousVelocity = currentVelocity;
     }
     // Update is called once per frame
     public override void OnActionReceived(ActionBuffers actionBuffers)
@@ -147,15 +136,10 @@ public class USVRaceAgent : Agent
         lineRenderers[2].GetPositions(linePositions);
         Vector3 targetPoint = linePositions[0];
         Vector3 closetPoint = items.Item3;
-        Vector3 p1 = pathCreator.path.GetPointAtTime(time);
-        Vector3 p2 = pathCreator.path.GetPointAtTime(secondTime);
-        Vector2 baseDirection = new Vector2(p2.x - p1.x, p2.z - p1.z);
-        Vector2 forwardVector = new Vector2(this.transform.forward.x, this.transform.forward.z);
 
-        int side = JudgeLineSide(p1, p2);
-        float diffAngle = DifferenceAngle(baseDirection, forwardVector) * side;
+        float diffAngle = DifferenceAngle(time, secondTime);
         float distanceToTarget = Vector3.Distance(targetPoint, closetPoint);
-        float distance2Line = items.Item2 * side;
+        float distance2Line = items.Item2 * diffAngle / Mathf.Abs(diffAngle);
 
         // take action value from actionBuffers
         input.Throttle = actionBuffers.ContinuousActions[0];
@@ -189,14 +173,23 @@ public class USVRaceAgent : Agent
         {
             AddReward(GetLocalVelocity(rBody).z * Mathf.Cos(diffAngle * Mathf.Deg2Rad) / 10);
         }
-        stringChannel.SendStringToPython(finished.ToString() + "," + wd.ToString() + "," + distOut.ToString() + "," + this.transform.localPosition.x.ToString() + "," + this.transform.localPosition.z.ToString());
+
+        StringBuilder sc = new StringBuilder();
+        sc.Append(finished.ToString());
+        sc.Append(",");
+        sc.Append(wd.ToString());
+        sc.Append(",");
+        sc.Append(distOut.ToString());
+        sc.Append(",");
+        sc.Append(this.transform.localPosition.x.ToString());
+        stringChannel.SendStringToPython(sc.ToString());
+
         // show the info on ui panel
         if (uiPanelText != null && uiPanelText.enabled)
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("USV x: " + this.transform.localPosition.x.ToString() + " y: " + this.transform.localPosition.z.ToString());
             sb.AppendLine("AngularVel: " + rBody.angularVelocity.y.ToString());
-            sb.AppendLine("Acceleration: " + acceleration.ToString());
             sb.AppendLine("Longutude Speed: " + GetLocalVelocity(rBody).z.ToString());
             sb.AppendLine("Travelled length: " + (items.Item1 * raceScale).ToString());
             sb.AppendLine("Closest Point: " + closetPoint.ToString());
@@ -230,9 +223,15 @@ public class USVRaceAgent : Agent
         return distance;
     }
     // Calculate the difference angle between the heading angle and the angle between two points in world direction
-    public float DifferenceAngle(Vector2 baseDirection, Vector2 destination)
+    public float DifferenceAngle(float time, float secondTime)
     {
-        float diffAngle =  Vector2.Angle(baseDirection, destination);
+        // Difference Angle between the heading angle and the direction on the line
+        Vector3 p1 = pathCreator.path.GetPointAtTime(time);
+        Vector3 p2 = pathCreator.path.GetPointAtTime(secondTime);
+        int side = JudgeLineSide(p1, p2);
+        Vector2 baseDirection = new Vector2(p2.x - p1.x, p2.z - p1.z);
+        Vector2 forwardVector = new Vector2(this.transform.forward.x, this.transform.forward.z);
+        float diffAngle =  Vector2.Angle(baseDirection, forwardVector) * side;
         return diffAngle;
     }
     public int JudgeLineSide(Vector3 p1, Vector3 p2)
